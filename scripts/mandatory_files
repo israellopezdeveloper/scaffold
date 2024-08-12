@@ -86,8 +86,9 @@ files_dir="$scaffold_project/files"
 # Copiar LICENSE si no existe
 if [ ! -f LICENSE ]; then
 	echo "Creando LICENSE"
-	replace_project_year "$files_dir/LICENSE" "LICENSE"
-	replace_prject_holder "LICENSE" "LICENSE"
+	replace_project_year "$files_dir/LICENSE" "LICENSE2"
+	replace_project_holder "LICENSE2" "LICENSE"
+	rm LICENSE2
 else
 	echo "El archivo template LICENSE no existe en $files_dir."
 fi
@@ -103,8 +104,9 @@ fi
 # Copiar y reemplazar [__PROJECT_NAME__] en CONTRIBUTING.md
 if [ -f "$files_dir/CONTRIBUTING.md" ]; then
 	echo "Creando CONTRIBUTING.md"
-	replace_project_name "$files_dir/CONTRIBUTING.md" "CONTRIBUTING.md"
-	replace_project_git_name "CONTRIBUTING.md" "CONTRIBUTING.md"
+	replace_project_name "$files_dir/CONTRIBUTING.md" "CONTRIBUTING2.md"
+	replace_project_git_name "CONTRIBUTING2.md" "CONTRIBUTING.md"
+	rm CONTRIBUTING2.md
 else
 	echo "El archivo template CONTRIBUTING.md no existe en $files_dir."
 fi
