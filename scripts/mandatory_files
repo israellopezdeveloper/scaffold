@@ -62,7 +62,7 @@ replace_project_name() {
 replace_project_git_name() {
 	local src_file=$1
 	local dest_file=$2
-	sed "s/\[__PROJECT_GIT_URL__\]/$project_git_url/g" "$src_file" >"$dest_file"
+	sed "s|[__PROJECT_GIT_URL__]|$project_git_url|g" "$src_file" >"$dest_file"
 }
 
 # Función para reemplazar [__YEAR__] en un archivo
