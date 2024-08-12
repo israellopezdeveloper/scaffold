@@ -49,6 +49,7 @@ fi
 
 # Cambiar de nuevo a la rama principal (supongamos que es main, cambiar si es diferente)
 git checkout main
+git submodule update --remote
 
 # Función para reemplazar [__PROJECT_NAME__] en un archivo
 replace_project_name() {
@@ -89,8 +90,6 @@ if [ ! -f LICENSE ]; then
 	replace_project_year "$files_dir/LICENSE" "LICENSE2"
 	replace_project_holder "LICENSE2" "LICENSE"
 	rm LICENSE2
-else
-	echo "El archivo template LICENSE no existe en $files_dir."
 fi
 
 # Copiar y reemplazar [__PROJECT_NAME__] en CODE_OF_CONDUCT.md
