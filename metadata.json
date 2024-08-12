@@ -1,0 +1,20 @@
+{
+  "technologies": [
+    "make",
+    "bash"
+  ],
+  "lang": {
+    "en": {
+      "name": "Scaffold",
+      "desc": "Scaffold for C/C++ projects"
+    },
+    "es": {
+      "name": "Andamiaje",
+      "desc": "Andamiaje para proyectos C/C++"
+    },
+    "zh": {
+      "name": "脚手架",
+      "desc": "C/C++ 项目的脚手架"
+    }
+  }
+}
