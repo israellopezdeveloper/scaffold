@@ -171,6 +171,7 @@ if [ -f "logo.png" ]; then
 fi
 git commit -m "Add metadata.json and logo.png"
 git push --set-upstream origin metadata-branch
+git checkout main
 
 # Avisar al usuario
 echo "Se ha creado la rama orphan 'metadata-branch' con el archivo metadata.json y logo.png (si fue proporcionado)."
