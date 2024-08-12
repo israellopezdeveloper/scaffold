@@ -30,6 +30,9 @@ create_module:
 	sed -i 's/RECURSIVE              = NO/RECURSIVE              = YES/' Doxyfile && \
 	sed -i 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' Doxyfile
 
+init: LICENSE CODE_OF_CONDUCT.md CONTRIBUTING.md
+	@$(SCAFFOLD_PATH)metadata && $(SCAFFOLD_PATH)mandatory_files
+
 .PHONY: all clean valgrind run tests format libs image image-push coverage docs
 
 define foreach_subdir
