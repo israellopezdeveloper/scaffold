@@ -1,5 +1,7 @@
 # master.mk
 
+SCAFFOLD_PATH := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+SCAFFOLD_PATH := $(patsubst %/,%,$(SCAFFOLD_PATH))
 MAKEFILE_PATH := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 SUBPROJECTS := $(shell find . -type f -name 'Makefile' -exec dirname {} \;)
 SUBPROJECTS := $(filter-out ., $(SUBPROJECTS))
@@ -31,7 +33,7 @@ create_module:
 	sed -i 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' Doxyfile
 
 init:
-	@$(SCAFFOLD_PATH)metadata && $(SCAFFOLD_PATH)mandatory_files
+	@$(SCAFFOLD_PATH)/scripts/metadata && $(SCAFFOLD_PATH)/scripts/mandatory_files
 
 .PHONY: all clean valgrind run tests format libs image image-push coverage docs
 
