@@ -72,7 +72,7 @@ GTEST_INCLUDE_DIR=$(GTEST_DIR)/final/usr/local/include
 ##################################
 # COMPILATION FLAGS
 ##################################
-INCLUDES_FLAGS=-I$(INCLUDES_DIR) $(patsubst %, -I%/$(INCLUDES_DIR)/,$(DEPENDENCIES_SHARED_LIBS)) $(patsubst %, -I%/$(INCLUDES_DIR)/,$(DEPENDENCIES_STATIC_LIBS)) -I$(COMMON_MK_PATH)config
+INCLUDES_FLAGS=-I$(INCLUDES_DIR) $(patsubst %, -I%/$(INCLUDES_DIR)/,$(DEPENDENCIES_SHARED_LIBS)) $(patsubst %, -I%/$(INCLUDES_DIR)/,$(DEPENDENCIES_STATIC_LIBS)) -I$(COMMON_MK_PATH)config -I$(COMMON_MK_PATH)logger
 EXCLUDES=-Wno-macro-redefined \
 				 -Wno-c23-extensions
 CXXFLAGS=-Wall -Wextra -pedantic -Wpedantic -Werror -pedantic-errors $(EXCLUDES) $(INCLUDES_FLAGS) -O3 -pthread -fPIC
