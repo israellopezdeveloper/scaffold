@@ -42,9 +42,11 @@
 #   - Ejemplo: EXTERNAL_DEPENDENCIES = pthread m
 # ==================================================================================
 
-CC=clang
-CXX=clang++
-AR=ar
+# ==================================================================================
+# Compiler Selection
+CC = $(shell which clang || which gcc)
+CXX = $(shell which clang++ || which g++)
+AR = ar
 
 filter ?= *
 
@@ -73,12 +75,18 @@ GTEST_INCLUDE_DIR=$(GTEST_DIR)/final/usr/local/include
 # COMPILATION FLAGS
 ##################################
 INCLUDES_FLAGS=-I$(INCLUDES_DIR) $(patsubst %, -I%/$(INCLUDES_DIR)/,$(DEPENDENCIES_SHARED_LIBS)) $(patsubst %, -I%/$(INCLUDES_DIR)/,$(DEPENDENCIES_STATIC_LIBS)) -I$(COMMON_MK_PATH)config -I$(COMMON_MK_PATH)nanologger
-EXCLUDES=-Wno-macro-redefined \
-				 -Wno-c23-extensions
-CXXFLAGS=-Wall -Wextra -pedantic -Wpedantic -Werror -pedantic-errors $(EXCLUDES) $(INCLUDES_FLAGS) -O3 -pthread -fPIC
+# Additional flags common to both compilers
+COMMON_FLAGS = -Wall -Wextra -pedantic -Wpedantic -Werror -pedantic-errors -pthread -fPIC
+
+# Compiler-specific flags
+ifeq ($(findstring clang,$(CC)),clang)
+    EXCLUDES = -Wno-macro-redefined -Wno-c23-extensions
+else ifeq ($(findstring gcc,$(CC)),gcc)
+    EXCLUDES = -Wno-macro-redefined
+endif
+CXXFLAGS = $(COMMON_FLAGS) $(EXCLUDES) $(INCLUDES_FLAGS) -O3
 TESTFLAGS=-I$(GTEST_INCLUDE_DIR) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest
 LDFLAGS=$(patsubst %, -L%/$(LIB_DIR)/,$(DEPENDENCIES_STATIC_LIBS)) $(patsubst %, -L%/$(LIB_DIR)/,$(DEPENDENCIES_SHARED_LIBS)) $(foreach dir,$(DEPENDENCIES_STATIC_LIBS),-l:lib$(notdir $(dir)).a) -lc $(foreach dir,$(DEPENDENCIES_SHARED_LIBS),-l:lib$(notdir $(dir)).so) $(foreach dir, $(EXTERNAL_DEPENDENCIES),-l$(notdir $(dir)))
-COVERAGE_FLAGS=-fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage
 STATIC_LIB_FLAGS=-r
 SHARED_LIB_FLAGS=-shared -fPIC
 
@@ -137,6 +145,17 @@ LLVM_JSON_REPORT=llvm-cov export $(BIN_DIR)/$(TEST_EXECUTABLE)_coverage \
 						-ignore-filename-regex='.*gtest.*' \
 						-ignore-filename-regex='.*test.*' \
 						-format=text > $(BUILD_DIR)/cov_report.json
+ifeq ($(findstring clang,$(CC)),clang)
+    COVERAGE_FLAGS = -fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage
+    COVERAGE_GENERATE = $(LLVM_PROF)
+    COVERAGE_REPORT = $(LLVM_HTML_REPORT)
+    COVERAGE_EXPORT = $(LLVM_JSON_REPORT)
+else ifeq ($(findstring gcc,$(CC)),gcc)
+    COVERAGE_FLAGS = --coverage
+    COVERAGE_GENERATE = lcov --capture --directory . --output-file $(BUILD_DIR)/coverage.info
+    COVERAGE_REPORT = genhtml $(BUILD_DIR)/coverage.info --output-directory $(BUILD_DIR)/cov_report
+    COVERAGE_EXPORT = lcov --list $(BUILD_DIR)/coverage.info > $(BUILD_DIR)/coverage_report.txt
+endif
 
 ##################################
 # RULES
@@ -239,12 +258,12 @@ $(C_OBJECTS_COVERAGE): $(BUILD_DIR)/%_coverage.o : $(SOURCES_DIR)/%.c $(BUILD_DI
 
 $(TEST_EXECUTABLE)_coverage: $(BIN_DIR)/$(TEST_EXECUTABLE)_coverage
 	@./$(BIN_DIR)/$(TEST_EXECUTABLE)_coverage
-	@mv default.profraw $(BUILD_DIR)
-	@$(LLVM_PROF) > /dev/null 2>&1
-	@$(LLVM_HTML_REPORT)
-	@$(LLVM_JSON_REPORT) && \
-  	jq '.data[0].totals' $(BUILD_DIR)/cov_report.json > $(BUILD_DIR)/coverage_report.json
-	@rm -rf $(BUILD_DIR)/cov_report.json $(BUILD_DIR)/default.profdata default.profraw
+	@mv default.profraw $(BUILD_DIR) || true
+	@$(COVERAGE_GENERATE) > /dev/null 2>&1
+	@$(COVERAGE_REPORT)
+	@$(COVERAGE_EXPORT) && \
+  	jq '.data[0].totals' $(BUILD_DIR)/cov_report.json > $(BUILD_DIR)/coverage_report.json || true
+	@rm -rf $(BUILD_DIR)/cov_report.json $(BUILD_DIR)/default.profdata default.profraw || true
 
 $(BIN_DIR)/$(TEST_EXECUTABLE)_coverage: $(TESTS_OBJECTS_COVERAGE) $(CPP_OBJECTS_COVERAGE) $(C_OBJECTS_COVERAGE) $(BIN_DIR) $(DEPENDENCIES_LIBS)
 	@$(CXX) $(CXXFLAGS) $(TESTFLAGS) $(COVERAGE_FLAGS) $(TESTS_OBJECTS_COVERAGE) $(CPP_OBJECTS_COVERAGE) $(C_OBJECTS_COVERAGE) $(LDFLAGS) -o $@
@@ -256,7 +275,7 @@ coverage: $(TEST_EXECUTABLE)_coverage
 	@echo ""
 	@echo "Running coverage..."
 	@echo "==================="
-	@cat $(BUILD_DIR)/coverage_report.json | jq
+	@cat $(BUILD_DIR)/coverage_report.json | jq || cat $(BUILD_DIR)/coverage_report.txt || true
 	@qutebrowser $(BUILD_DIR)/cov_report/index.html > /dev/null 2>&1 &
 
 #################
