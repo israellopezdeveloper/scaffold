@@ -37,7 +37,7 @@ project_name=$(jq -r '.lang.en.name' metadata.json)
 
 remote_url=$(git remote get-url origin)
 repo_path=$(echo "$remote_url" | sed -e 's/^git@github.com://' -e 's/\.git$//' -e 's/:/\//')
-project_git_url="https://github.com/$repo_path/issues/new"
+project_git_url="https://github.com/$repo_path"
 
 year=$(date +%Y)
 holder="Israel López"
