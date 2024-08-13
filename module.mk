@@ -82,7 +82,7 @@ COMMON_FLAGS = -Wall -Wextra -pedantic -Wpedantic -Werror -pedantic-errors -pthr
 ifeq ($(findstring clang,$(CC)),clang)
     EXCLUDES = -Wno-macro-redefined -Wno-c23-extensions
 else ifeq ($(findstring gcc,$(CC)),gcc)
-    EXCLUDES = -Wno-macro-redefined
+    EXCLUDES = -Wno-macro-redefined -Wno-gnu-zero-variadic-macro-arguments
 endif
 CXXFLAGS = $(COMMON_FLAGS) $(EXCLUDES) $(INCLUDES_FLAGS) -O3
 TESTFLAGS=-I$(GTEST_INCLUDE_DIR) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest
