@@ -82,7 +82,7 @@ COMMON_FLAGS = -Wall -Wextra -pedantic -Wpedantic -Werror -pedantic-errors -pthr
 ifeq ($(findstring clang,$(CC)),clang)
     EXCLUDES = -Wno-macro-redefined -Wno-c23-extensions
 else ifeq ($(findstring gcc,$(CC)),gcc)
-    EXCLUDES = -Wno-macro-redefined -Wno-gnu-zero-variadic-macro-arguments
+    EXCLUDES = -Wno-macro-redefined -Wno-gnu-zero-variadic-macro-arguments -Wno-writable-strings
 endif
 CXXFLAGS = $(COMMON_FLAGS) $(EXCLUDES) $(INCLUDES_FLAGS) -O3
 TESTFLAGS=-I$(GTEST_INCLUDE_DIR) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest
@@ -201,13 +201,13 @@ main.cpp:
 $(EXECUTABLE): $(BIN_DIR)/$(EXECUTABLE)
 
 $(BIN_DIR)/$(EXECUTABLE): $(CPP_OBJECTS) $(C_OBJECTS) $(BIN_DIR) main.cpp $(DEPENDENCIES_LIBS)
-	@$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) main.cpp $(LDFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(CPP_OBJECTS) $(C_OBJECTS) main.cpp $(LDFLAGS) -o $@
 
 $(CPP_OBJECTS): $(BUILD_DIR)/%.o : $(SOURCES_DIR)/%.cpp $(BUILD_DIR)
-	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(C_OBJECTS): $(BUILD_DIR)/%.o : $(SOURCES_DIR)/%.c $(BUILD_DIR)
-	@$(CC) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) -c $< -o $@
 
 run: $(EXECUTABLE)
 	@echo ""
@@ -258,14 +258,14 @@ $(C_OBJECTS_COVERAGE): $(BUILD_DIR)/%_coverage.o : $(SOURCES_DIR)/%.c $(BUILD_DI
 
 $(TEST_EXECUTABLE)_coverage: $(BIN_DIR)/$(TEST_EXECUTABLE)_coverage
 	@./$(BIN_DIR)/$(TEST_EXECUTABLE)_coverage
-	@mv default.profraw $(BUILD_DIR) || true
+	@mv default.profraw $(BUILD_DIR) > /dev/null 2>&1 || true
 	@$(COVERAGE_GENERATE) > /dev/null 2>&1
 	@$(COVERAGE_REPORT)
 	@$(COVERAGE_EXPORT) && \
   	jq '.data[0].totals' $(BUILD_DIR)/cov_report.json > $(BUILD_DIR)/coverage_report.json || true
 	@rm -rf $(BUILD_DIR)/cov_report.json $(BUILD_DIR)/default.profdata default.profraw || true
 
-$(BIN_DIR)/$(TEST_EXECUTABLE)_coverage: $(TESTS_OBJECTS_COVERAGE) $(CPP_OBJECTS_COVERAGE) $(C_OBJECTS_COVERAGE) $(BIN_DIR) $(DEPENDENCIES_LIBS)
+$(BIN_DIR)/$(TEST_EXECUTABLE)_coverage: $(GTEST_DIR) $(TESTS_OBJECTS_COVERAGE) $(CPP_OBJECTS_COVERAGE) $(C_OBJECTS_COVERAGE) $(BIN_DIR) $(DEPENDENCIES_LIBS)
 	@$(CXX) $(CXXFLAGS) $(TESTFLAGS) $(COVERAGE_FLAGS) $(TESTS_OBJECTS_COVERAGE) $(CPP_OBJECTS_COVERAGE) $(C_OBJECTS_COVERAGE) $(LDFLAGS) -o $@
 
 $(TESTS_OBJECTS_COVERAGE): $(BUILD_DIR)/%_coverage.o : $(TESTS_DIR)/%.cpp $(BUILD_DIR)
