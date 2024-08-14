@@ -152,9 +152,9 @@ ifeq ($(findstring clang,$(CC)),clang)
     COVERAGE_EXPORT = $(LLVM_JSON_REPORT)
 else ifeq ($(findstring gcc,$(CC)),gcc)
     COVERAGE_FLAGS = --coverage
-    COVERAGE_GENERATE = lcov --capture --directory . --output-file $(BUILD_DIR)/coverage.info
-    COVERAGE_REPORT = genhtml $(BUILD_DIR)/coverage.info --output-directory $(BUILD_DIR)/cov_report
-    COVERAGE_EXPORT = lcov --list $(BUILD_DIR)/coverage.info > $(BUILD_DIR)/coverage_report.txt
+    COVERAGE_GENERATE = lcov --capture --directory . --output-file $(BUILD_DIR)/coverage.info; lcov --remove  $(BUILD_DIR)/coverage.info '/usr/*' '*/tests/*' '*/mock/*' '*/gtest/*' '*/test/*_test.cpp' --output-file  $(BUILD_DIR)/coverage_filtered.info
+    COVERAGE_REPORT = genhtml $(BUILD_DIR)/coverage_filtered.info --output-directory $(BUILD_DIR)/cov_report
+    COVERAGE_EXPORT = lcov --list $(BUILD_DIR)/coverage_filtered.info > $(BUILD_DIR)/coverage_report.txt
 endif
 
 ##################################
