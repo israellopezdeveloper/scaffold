@@ -1,5 +1,7 @@
 # master.mk
 
+SCAFFOLD_PATH := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+SCAFFOLD_PATH := $(patsubst %/,%,$(SCAFFOLD_PATH))
 MAKEFILE_PATH := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 SUBPROJECTS := $(shell find . -type f -name 'Makefile' -exec dirname {} \;)
 SUBPROJECTS := $(filter-out ., $(SUBPROJECTS))
@@ -30,6 +32,9 @@ create_module:
 	sed -i 's/RECURSIVE              = NO/RECURSIVE              = YES/' Doxyfile && \
 	sed -i 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' Doxyfile
 
+init:
+	@$(SCAFFOLD_PATH)/scripts/metadata && $(SCAFFOLD_PATH)/scripts/mandatory_files
+
 .PHONY: all clean valgrind run tests format libs image image-push coverage docs
 
 define foreach_subdir
@@ -41,7 +46,11 @@ all:
 	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) all;)
 
 clean:
+	@rm -rf libs docs || true
 	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) clean;)
+
+prepare:
+	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) prepare;)
 
 valgrind:
 	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) valgrind;)
@@ -56,10 +65,14 @@ format:
 	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) format;)
 
 libs:
-	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) libs;)
+	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) libs;) \
+		mkdir -p libs; \
+		$(foreach ndir, $(SUBPROJECTS), cp $(ndir)/lib/* libs;)
 
 docs:
-	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) docs;)
+	@$(foreach ndir, $(SUBPROJECTS), $(MAKE) -C $(ndir) docs;) \
+		mkdir -p docs; \
+		$(foreach ndir, $(SUBPROJECTS), dirn="$$(basename "$(ndir)")"; mkdir -p "docs/$${dirn}"; cp -r "$${dirn}/build/docs/html" "docs/$${dirn}"; cp "$${dirn}/build/docs/latex/refman.pdf" "docs/$${dirn}/refman.pdf";)
 
 define get_coverage_values
 	$(foreach ndir, $(SUBPROJECTS), $(eval COVERAGE_BRANCH_VALUES += $(shell jq '.branches.percent' "$(ndir)/build/coverage_report.json")))
