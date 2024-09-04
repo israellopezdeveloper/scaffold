@@ -37,7 +37,7 @@ project_name=$(jq -r '.lang.en.name' metadata.json)
 
 remote_url=$(git remote get-url origin)
 repo_path=$(echo "$remote_url" | sed -e 's/^git@github.com://' -e 's/\.git$//' -e 's/:/\//')
-project_git_url="https://github.com/$repo_path/issues/new"
+project_git_url="https://github.com/$repo_path"
 
 year=$(date +%Y)
 holder="Israel López"
@@ -49,6 +49,7 @@ fi
 
 # Cambiar de nuevo a la rama principal (supongamos que es main, cambiar si es diferente)
 git checkout main
+git submodule update --remote
 
 # Función para reemplazar [__PROJECT_NAME__] en un archivo
 replace_project_name() {
@@ -61,7 +62,7 @@ replace_project_name() {
 replace_project_git_name() {
 	local src_file=$1
 	local dest_file=$2
-	sed "s/\[__PROJECT_GIT_URL__\]/$project_git_url/g" "$src_file" >"$dest_file"
+	sed "s|\[__PROJECT_GIT_URL__\]|$project_git_url|g" "$src_file" >"$dest_file"
 }
 
 # Función para reemplazar [__YEAR__] en un archivo
@@ -89,8 +90,6 @@ if [ ! -f LICENSE ]; then
 	replace_project_year "$files_dir/LICENSE" "LICENSE2"
 	replace_project_holder "LICENSE2" "LICENSE"
 	rm LICENSE2
-else
-	echo "El archivo template LICENSE no existe en $files_dir."
 fi
 
 # Copiar y reemplazar [__PROJECT_NAME__] en CODE_OF_CONDUCT.md
