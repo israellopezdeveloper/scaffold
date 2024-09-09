@@ -61,8 +61,6 @@ add_git_submodule() {
 		echo "Error: Failed to add submodule to .scaffold" >&2
 		exit 1
 	fi
-	cd .scaffold
-	git checkout feature/gnu-compliant
 }
 
 # Function to select programming language
@@ -86,7 +84,7 @@ select_language() {
 
 		# Read user selection
 		printf "Enter the number of your choice: "
-		read choice
+		read choice </dev/tty
 
 		# Validate the user's selection
 		i=1
@@ -163,34 +161,34 @@ create_metadata_branch() {
 # Function to collect metadata interactively
 collect_metadata() {
 	printf "Enter technologies (comma-separated, spaces will be handled): $LANGUAGE"
-	read technologies
+	read technologies </dev/tty
 
 	# Append the selected language to the technologies list
 	technologies="$technologies, $LANGUAGE"
 
 	printf "Enter repository name in English: "
-	read name_english
+	read name_english </dev/tty
 
 	printf "Enter repository description in English: "
-	read desc_english
+	read desc_english </dev/tty
 
 	printf "Enter repository name in Spanish: "
-	read name_spanish
+	read name_spanish </dev/tty
 
 	printf "Enter repository description in Spanish: "
-	read desc_spanish
+	read desc_spanish </dev/tty
 
 	printf "Enter repository name in Chinese: "
-	read name_chinese
+	read name_chinese </dev/tty
 
 	printf "Enter repository description in Chinese: "
-	read desc_chinese
+	read desc_chinese </dev/tty
 }
 
 # Function to ask for image path, verify, and convert if needed
 handle_image() {
 	printf "Enter the path to the repository logo image: "
-	read image_path
+	read image_path </dev/tty
 
 	if [ ! -f "$image_path" ]; then
 		echo "Error: File does not exist at $image_path" >&2
@@ -302,13 +300,13 @@ done
 # Ask for URL if not provided
 if [ -z "$url" ]; then
 	printf "Enter the GitHub repository URL: "
-	read url
+	read url </dev/tty
 fi
 
 # Ask for directory if not provided
 if [ -z "$directory" ]; then
 	printf "Enter the directory to clone the repository into: "
-	read directory
+	read directory </dev/tty
 fi
 
 # Create the directory and set up Git repository and submodule
