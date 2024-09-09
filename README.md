@@ -3,5 +3,6 @@
 Para ejecutar el creador de proyectos: 
 
 ```shell
-wget -qO- https://raw.githubusercontent.com/israellopezdeveloper/scaffold/7591d64cc95d60f823ea82ec36aeb99c3dfe55a0/create_repo | bash
+wget -qO- https://raw.githubusercontent.com/israellopezdeveloper/scaffold/eccc254b1f4c2e9ea980848145ae67e72f0f1ae8/create_repo | bash
+https://github.com/israellopezdeveloper/scaffold/blob/eccc254b1f4c2e9ea980848145ae67e72f0f1ae8/create_repo
 ```

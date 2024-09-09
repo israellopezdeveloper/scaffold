@@ -63,6 +63,7 @@ add_git_submodule() {
 	fi
 	cd .scaffold
 	git checkout feature/gnu-compliant
+	cd ..
 }
 
 # Function to select programming language
