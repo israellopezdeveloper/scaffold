@@ -65,13 +65,13 @@ validate_email() {
 prompt_user_input() {
 	if [ -z "$PROJECT_NAME" ]; then
 		printf "Enter the project name: "
-		read -r PROJECT_NAME
+		read -r PROJECT_NAME </dev/tty
 	fi
 
 	# Repeat until a valid version is entered
 	while [ -z "$VERSION" ]; do
 		printf "Enter the version (semver format): "
-		read -r VERSION
+		read -r VERSION </dev/tty
 
 		if ! validate_semver "$VERSION"; then
 			echo "Error: The version is not valid. It must follow the semver format (e.g., 1.0.0)"
@@ -82,7 +82,7 @@ prompt_user_input() {
 	# Repeat until a valid email is entered
 	while [ -z "$EMAIL" ]; do
 		printf "Enter the email: "
-		read -r EMAIL
+		read -r EMAIL </dev/tty
 
 		if ! validate_email "$EMAIL"; then
 			echo "Error: The email is not valid. It must follow the format user@example.com"
@@ -93,13 +93,13 @@ prompt_user_input() {
 	# Prompt for name if not set
 	if [ -z "$NAME" ]; then
 		printf "Enter your name: "
-		read -r NAME
+		read -r NAME </dev/tty
 	fi
 
 	# Prompt for position if not set
 	if [ -z "$POSITION" ]; then
 		printf "Enter your position: "
-		read -r POSITION
+		read -r POSITION </dev/tty
 	fi
 }
 
