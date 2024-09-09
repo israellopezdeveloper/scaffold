@@ -1,0 +1,49 @@
+if ENABLE_CODE_COVERAGE
+COVERAGE_OUTPUT = coverage
+
+# Reglas para generar cobertura de código con GCC
+coverage-GCC:
+	@$(MAKE) clean
+	@$(MAKE) check > /dev/null 2>&1
+	@$(GCOV) -o src $(srcdir)/src/*.c > /dev/null 2>&1
+	@mkdir -p coverage/{html,json}
+	@$(LCOV) --capture --directory src --output-file coverage/coverage.info > /dev/null 2>&1
+	@$(GENHTML) coverage/coverage.info --output-directory coverage/html > /dev/null 2>&1
+	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's/\.\.\/include\//$(srcdir)\/src\//g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
+   $(GCOVR) --json-summary \
+    --root $(srcdir)/src \
+    --filter "$${FILTER_PATTERN}" \
+    -o coverage/json/coverage.json src > /dev/null 2>&1
+	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's/\.\.\/include\//$(srcdir)\/src\//g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
+   $(GCOVR) --json-summary --root $(srcdir)/src \
+    --filter "$${FILTER_PATTERN}" \
+		--fail-under-line 80 \
+		--fail-under-branch 80 \
+	src > /dev/null
+
+# Reglas para generar cobertura de código con Clang
+coverage-Clang:
+	@$(MAKE) clean
+	@$(MAKE) check > /dev/null 2>&1
+	@$(LLVM_PROFDATA) merge -sparse default.profraw -o default.profdata
+	@mkdir -p coverage/{html,json} 
+	@$(LLVM_COV) show $$(find tests -maxdepth 1 -type f -executable -print | tr '\n' ' ') -instr-profile=default.profdata -format=html -output-dir=coverage/html
+	@$(LLVM_COV) export $$(find tests -maxdepth 1 -type f -executable -print | tr '\n' ' ') -instr-profile=default.profdata -format=text -summary-only | jq ".data[0].totals" | jq 'del(.regions, .instantiations, .mcdc)' > coverage/json/coverage.json
+	@export LINE_COVERAGE=$$(jq -r '.lines.percent' coverage/json/coverage.json); \
+  export LINE_COVERAGE_INT=$$(echo "$$LINE_COVERAGE" | awk '{ printf("%d\n", $$1 * 10) }'); \
+	if [ "$$LINE_COVERAGE_INT" -lt 800 ]; then \
+    echo "Error: La cobertura de líneas es inferior al 80%. Cobertura actual: $$LINE_COVERAGE%" >&2; exit 1; \
+  fi
+	@export BRANCH_COVERAGE=$$(jq -r '.branches.percent' coverage/json/coverage.json); \
+  export BRANCH_COVERAGE_INT=$$(echo "$$BRANCH_COVERAGE" | awk '{ printf("%d\n", $$1 * 10) }'); \
+	export BRANCH_TOTAL=$$(jq -r '.branches.count' coverage/json/coverage.json); \
+  export BRANCH_TOTAL_INT=$$(echo "$$BRANCH_TOTAL" | awk '{ printf("%d\n", $$1) }'); \
+	if [ "$$BRANCH_COVERAGE_INT" -lt 800 ] && [ "$$BRANCH_TOTAL_INT" -ne 0 ]; then \
+    echo "Error: La cobertura de ramas es inferior al 80%. Cobertura actual: $$BRANCH_COVERAGE%" >&2; exit 1; \
+  fi
+
+coverage: coverage-@COMPILER@
+
+.PHONY: coverage
+endif
+

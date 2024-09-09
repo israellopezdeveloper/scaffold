@@ -1,0 +1,19 @@
+# Regla para gtest
+
+GTEST_DIR = $(srcdir)/gtest
+GTEST_INCLUDE = -I$(GTEST_DIR)/googletest/include -I$(GTEST_DIR)/googlemock/include
+GTEST_LIBS = $(GTEST_DIR)/build/lib/libgtest.a $(GTEST_DIR)/build/lib/libgtest_main.a
+
+check: gtest
+	@echo ""
+
+gtest:
+	@if [ ! -d "$(srcdir)/gtest" ]; then \
+     echo "Clonando GoogleTest..."; \
+     git clone https://github.com/google/googletest.git $(srcdir)/gtest; \
+     mkdir -p $(srcdir)/gtest/build && cd $(srcdir)/gtest/build && cmake .. && make; \
+  else \
+     echo "GoogleTest ya está presente."; \
+     mkdir -p $(srcdir)/gtest/build && cd $(srcdir)/gtest/build && cmake .. && make; \
+  fi
+

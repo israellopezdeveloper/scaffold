@@ -1,0 +1,20 @@
+if ENABLE_DOXYGEN_DOC
+
+DOXYGEN_OUTPUT = docs/doxygen
+
+docs/doxygen/html/index.html: Doxyfile
+	@mkdir -p docs/doxygen
+	@$(DOXYGEN) Doxyfile > /dev/null 2>&1
+
+docs/doxygen/latex/refman.pdf: Doxyfile
+	@mkdir -p docs/doxygen/latex
+	@$(DOXYGEN) Doxyfile > /dev/null 2>&1
+	@cd docs/doxygen/latex; $(MAKE) > /dev/null
+
+doxygen-doc: docs/doxygen/html/index.html docs/doxygen/latex/refman.pdf
+
+.PHONY: doxygen-doc
+
+CLEANFILES += -r docs/doxygen
+endif
+
