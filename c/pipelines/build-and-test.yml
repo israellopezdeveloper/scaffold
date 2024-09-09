@@ -33,7 +33,7 @@ on:
         default: true
 jobs:
   build-and-test:
-    name: "Build and test on ${{ inputs.docker_image }} [${{ inputs.mode }}]"
+    name: "Build and test [${{ inputs.mode }}]"
     runs-on: ubuntu-latest
     container:
       image: ${{ inputs.docker_image }}
