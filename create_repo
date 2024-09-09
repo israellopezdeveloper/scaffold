@@ -61,9 +61,6 @@ add_git_submodule() {
 		echo "Error: Failed to add submodule to .scaffold" >&2
 		exit 1
 	fi
-	cd .scaffold
-	git checkout feature/gnu-compliant
-	cd ..
 }
 
 # Function to select programming language

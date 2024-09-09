@@ -233,3 +233,17 @@ done
 echo "Generating gitignore file"
 echo "m4/*" >.gitignore
 echo "!m4/my_*.m4" >>.gitignore
+echo "autom4te.cache/" >>.gitignore
+echo "build/" >>.gitignore
+echo "gtest/" >>.gitignore
+echo "Makefile.in" >>.gitignore
+echo "aclocal.m4" >>.gitignore
+echo "ar-lib" >>.gitignore
+echo "compile" >>.gitignore
+echo "config.guess" >>.gitignore
+echo "config.h.in" >>.gitignore
+echo "config.sub" >>.gitignore
+echo "configure" >>.gitignore
+echo "install-sh" >>.gitignore
+echo "ltmain.sh" >>.gitignore
+echo "missing" >>.gitignore
