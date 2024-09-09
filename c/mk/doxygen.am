@@ -1,0 +1,21 @@
+if ENABLE_DOXYGEN_DOC
+
+DOXYGEN_OUTPUT = docs
+
+docs/html/index.html: Doxyfile
+	@mkdir -p docs
+	@$(DOXYGEN) Doxyfile > /dev/null 2>&1
+
+docs/latex/refman.pdf: Doxyfile
+	@mkdir -p docs/latex
+	@$(DOXYGEN) Doxyfile > /dev/null 2>&1
+	@cd docs/latex; $(MAKE) > /dev/null; find . -type f -not \( -name "*.pdf" -o -name "*.sty" -o -name "Makefile" -o -name "*.tex" \) -delete
+	@tar -czvf docs.tar.gz docs
+
+doxygen-doc: docs/html/index.html docs/latex/refman.pdf
+
+.PHONY: doxygen-doc
+
+CLEANFILES += -r docs/*
+endif
+
