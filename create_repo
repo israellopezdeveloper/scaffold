@@ -71,7 +71,7 @@ select_language() {
 	if [ -d ".scaffold" ]; then
 		printf "Fetching available programming languages...\n"
 		# Get the list of directories inside .scaffold
-		options=$(find .scaffold -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+		options=$(find .scaffold -mindepth 1 -maxdepth 1 \( -type d -o -type l -xtype d \) -not -name '.*' -exec basename {} \;)
 
 		if [ -z "$options" ]; then
 			echo "Error: No options found in .scaffold directory" >&2
@@ -163,7 +163,7 @@ create_metadata_branch() {
 
 # Function to collect metadata interactively
 collect_metadata() {
-	printf "Enter technologies (comma-separated, spaces will be handled): $LANGUAGE"
+	printf "Enter technologies (comma-separated, spaces will be handled): $LANGUAGE, "
 	read technologies </dev/tty
 
 	# Append the selected language to the technologies list

@@ -25,6 +25,7 @@ fi
 FILES_DIR="$SCRIPT_PATH/files"
 M4_DIR="$SCRIPT_PATH/m4"
 MK_DIR="$SCRIPT_PATH/mk"
+PIPELINE_DIR="$SCRIPT_PATH/pipelines"
 YEAR=$(date +%Y)
 HOLDER=$(git config --get user.name)
 
@@ -200,12 +201,17 @@ done
 
 # Create necessary directories and link files
 mkdir -p {m4,.mk}
+mkdir -p .github/workflows
 for f in ${M4_DIR}/*; do
 	ln -s "$(realpath --relative-to="${DEST_DIR}/m4" "${f}")" "${DEST_DIR}/m4"
 done
 
 for f in ${MK_DIR}/*; do
 	ln -s "$(realpath --relative-to="${DEST_DIR}/.mk" "${f}")" "${DEST_DIR}/.mk"
+done
+
+for f in ${PIPELINE_DIR}/*; do
+	cp "${f}" "${DEST_DIR}/.github/workflows"
 done
 
 # Output information
