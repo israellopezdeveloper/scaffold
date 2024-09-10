@@ -23,9 +23,10 @@ include .mk/my_conf.am
 
 # **Tests** must be placed at tests folder
 # check_PROGRAMS = tests/mylib_test
-# tests_mylib_test_SOURCES = src/mylib.c include/mylib.h
-# tests_mylib_test_LDADD = lib/libmylib.la
-# tests_mylib_test_LDFLAGS = -static \$(GTEST_LIBS) -lpthread
+# tests_mylib_test_SOURCES = tests/mylib_test.cpp include/mylib.h
+# tests_mylib_test_CXXFLAGS = $(GTEST_INCLUDE)
+# tests_mylib_test_LDADD = lib/libmylib.la $(GTEST_LIBS)
+# tests_mylib_test_LDFLAGS = -static -lpthread
 
 # Add tests to compilation process (space separated list)
 # TESTS = tests/mylib_test
