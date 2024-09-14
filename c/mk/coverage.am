@@ -27,8 +27,13 @@ coverage-Clang:
 	@$(MAKE) check > /dev/null 2>&1
 	@$(LLVM_PROFDATA) merge -sparse default.profraw -o default.profdata
 	@mkdir -p coverage/{html,json} 
-	@$(LLVM_COV) show $$(find tests -maxdepth 1 -type f -executable -print | tr '\n' ' ') -instr-profile=default.profdata -format=html -output-dir=coverage/html
-	@$(LLVM_COV) export $$(find tests -maxdepth 1 -type f -executable -print | tr '\n' ' ') -instr-profile=default.profdata -format=text -summary-only | jq ".data[0].totals" | jq 'del(.regions, .instantiations, .mcdc)' > coverage/json/coverage.json
+	@$(LLVM_COV) show \
+    $$(find tests -type f -name '*_test' -executable | head -n 1) \
+    $(srcdir)/src \
+    -instr-profile=default.profdata \
+    -format=html \
+    -output-dir=coverage/html
+	@$(LLVM_COV) export $$(find tests -type f -name '*_test' -executable | head -n 1) -instr-profile=default.profdata -format=text -summary-only | jq ".data[0].totals" | jq 'del(.regions, .instantiations, .mcdc)' > coverage/json/coverage.json
 	@export LINE_COVERAGE=$$(jq -r '.lines.percent' coverage/json/coverage.json); \
   export LINE_COVERAGE_INT=$$(echo "$$LINE_COVERAGE" | awk '{ printf("%d\n", $$1 * 10) }'); \
 	if [ "$$LINE_COVERAGE_INT" -lt 800 ]; then \
