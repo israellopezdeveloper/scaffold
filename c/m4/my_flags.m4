@@ -1,8 +1,8 @@
 dnl Macro para configurar los flags
 AC_DEFUN([CONFIGURE_FLAGS], [
-    CFLAGS_COMMON="-Wall -Wextra -Werror -fstack-protector-strong -Wshadow -Wformat=2 -Wstrict-overflow=5 -fstack-clash-protection"
+    CFLAGS_COMMON="-Wall -Wextra -Werror -fstack-protector-strong -Wshadow -Wformat=2 -Wstrict-overflow=5 -fstack-clash-protection -fPIE"
     CXXFLAGS_COMMON="$CFLAGS_COMMON"
-    LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now"
+    LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now -pie"
 
     # Establece directorios de inclusión
     CPPFLAGS="$CPPFLAGS -I${srcdir}/include"
@@ -10,9 +10,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
     case "$build_mode" in
         production)
             AC_MSG_NOTICE([Compilando en modo producción])
-            CFLAGS="-O3 -march=native -flto -funroll-loops $CFLAGS_COMMON"
-            CXXFLAGS="-O3 -march=native -flto -funroll-loops $CXXFLAGS_COMMON"
-            LDFLAGS="-flto -fPIE $LDFLAGS_COMMON"
+            CFLAGS="-O3 -fPIE -march=native -flto -funroll-loops $CFLAGS_COMMON"
+            CXXFLAGS="-O3 -fPIE -march=native -flto -funroll-loops $CXXFLAGS_COMMON"
+            LDFLAGS="-flto -pie $LDFLAGS_COMMON"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
