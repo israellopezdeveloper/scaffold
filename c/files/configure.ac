@@ -1,8 +1,8 @@
 # This is an automatically generated configuration file.
-# It is recommended not to modify this file or any macros included in the m4 directory.
 
 AC_INIT([__PROJECT_NAME__],[__VERSION__],[__EMAIL__])
 
+# It is recommended not to modify this file from this line
 # Detect the C and C++ compilers
 AC_PROG_CC
 AC_PROG_CXX
