@@ -20,7 +20,6 @@ EXTRACT_STATIC         = YES
 EXTRACT_LOCAL_CLASSES  = YES
 EXCLUDE_SYMBOLS        = __attribute__
 
-
 # Documented source code
 SOURCE_BROWSER         = YES
 INLINE_SOURCES         = YES
