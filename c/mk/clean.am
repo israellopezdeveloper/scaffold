@@ -2,7 +2,7 @@ maintainer-clean-local:
 	@rm -rf $(srcdir)/aclocal.m4 $(srcdir)/depcomp $(srcdir)/install-sh \
 		$(srcdir)/Makefile.in $(srcdir)/missing $(srcdir)/test-driver \
 		$(srcdir)/compile $(srcdir)/configure~ $(srcdir)/configure \
-		$(srcdir)/config.h.in $(srcdir)/ar-lib $(srcdir)/config.guess \
-		$(srcdir)/config.h.in~ $(srcdir)/config.sub $(srcdir)/ltmain.sh \
+		$(srcdir)/ar-lib $(srcdir)/config.guess $(srcdir)/include/config.h.in \
+		$(srcdir)/include/config.h.in~ $(srcdir)/config.sub $(srcdir)/ltmain.sh \
     $(srcdir)/configure.ac~
 

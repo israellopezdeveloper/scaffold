@@ -75,7 +75,14 @@ AC_DEFUN([MY_CONFIGURATION], [
 
   SUMMARY
 
-  AC_CONFIG_HEADERS([config.h])
+  AH_TOP([
+  #include <unistd.h>
+  
+  #define ERROR_CODE 0
+  
+  #define SUCCESS_CODE 1
+  ])
+  AC_CONFIG_HEADERS([include/config.h])
   AC_CONFIG_FILES([Makefile])
   AC_OUTPUT
 ])
