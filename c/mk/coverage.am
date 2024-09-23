@@ -4,7 +4,7 @@ COVERAGE_OUTPUT = coverage
 # Reglas para generar cobertura de código con GCC
 coverage-GCC:
 	@$(MAKE) clean
-	@$(MAKE) check > /dev/null 2>&1
+	@$(MAKE) check
 	@$(GCOV) -o src $(srcdir)/src/*.c > /dev/null 2>&1
 	@mkdir -p coverage/{html,json}
 	@$(LCOV) --capture --directory src --output-file coverage/coverage.info > /dev/null 2>&1
