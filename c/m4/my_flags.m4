@@ -113,9 +113,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                         AC_MSG_NOTICE([gcovr found, coverage reports enabled])
                     fi
                     AC_MSG_NOTICE([Enabling code coverage for GCC])
-                    CFLAGS="-fprofile-arcs -ftest-coverage $CFLAGS_COMMON"
-                    CXXFLAGS="-fprofile-arcs -ftest-coverage $CXXFLAGS_COMMON"
-                    LDFLAGS="-fprofile-arcs -ftest-coverage $LDFLAGS_COMMON"
+                    CFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CFLAGS_COMMON"
+                    CXXFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CXXFLAGS_COMMON"
+                    LDFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $LDFLAGS_COMMON"
                     AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [true])
                     ;;
                 Clang)

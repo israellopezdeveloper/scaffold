@@ -5,11 +5,11 @@ COVERAGE_OUTPUT = coverage
 coverage-GCC:
 	@$(MAKE) clean
 	@$(MAKE) check
-	@$(GCOV) -o src $(srcdir)/src/*.c > /dev/null 2>&1
+	@$(GCOV) -o src $(srcdir)/src/*.c
 	@mkdir -p coverage/{html,json}
-	@$(LCOV) --capture --directory src --output-file coverage/coverage.info > /dev/null 2>&1
-	@$(LCOV) --extract coverage/coverage.info "*/src/*" --output-file coverage/filtered_coverage.info > /dev/null 2>&1
-	@$(GENHTML) coverage/filtered_coverage.info --output-directory coverage/html > /dev/null 2>&1
+	@$(LCOV) --capture --directory src --output-file coverage/coverage.info
+	@$(LCOV) --extract coverage/coverage.info "*/src/*" --output-file coverage/filtered_coverage.info
+	@$(GENHTML) coverage/filtered_coverage.info --output-directory coverage/html
 	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
    $(GCOVR) --json-summary \
     --root $(srcdir)/src \
