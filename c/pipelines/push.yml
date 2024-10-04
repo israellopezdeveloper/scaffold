@@ -46,6 +46,4 @@ jobs:
       commands: |
         ./runme --coverage --noclean --nocompile-commands
         tar -czf coverage.tar.gz build/coverage
-      artifact_path: 'coverage.tar.gz'
-      artifact_name: 'coverage'
 

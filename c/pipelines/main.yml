@@ -12,9 +12,14 @@ jobs:
       docker_image: 'lopoeisr/ubuntu-make-doc:1.0'
       docker_options: '--privileged --user root'
       commands: |
-        ./runme --docs --noclean --nocompile-commands
-        tar -czf docs.tar.gz build/docs
-      artifact_path: 'docs.tar.gz'
+        autoreconf --install
+        mkdir build
+        cd build
+        ../configure --enable-doxygen-doc
+        make doxygen-doc
+        cd ..
+        tar -czf documentation.tar.gz -C build/docs html -C latex refman.pdf
+      artifact_path: 'documentation.tar.gz'
       artifact_name: 'documentation'
 
   create-coverage:
@@ -24,7 +29,7 @@ jobs:
       docker_options: '--privileged --user root'
       commands: |
         ./runme --coverage --noclean --nocompile-commands
-        tar -czf coverage.tar.gz build/coverage
+        tar -czf coverage.tar.gz -C build/coverage .
       artifact_path: 'coverage.tar.gz'
       artifact_name: 'coverage'
 
@@ -80,7 +85,9 @@ jobs:
         fetch-depth: 0
         recursive: true
     - name: Get version number
-      run: echo "VERSION=$(./configure --version | head -n1 | sed 's/.* \([0-9]\+\.[0-9]\+\.[0-9]\+\)/\1/')" >> $GITHUB_ENV
+      run: |
+        autoreconf --install
+        echo "VERSION=$(./configure --version | head -n1 | sed 's/.* \([0-9]\+\.[0-9]\+\.[0-9]\+\)/\1/')" >> $GITHUB_ENV
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -147,3 +154,4 @@ jobs:
         asset_path: ./coverage.tar.gz
         asset_name: coverage.tar.gz
         asset_content_type: application/gzip
+
