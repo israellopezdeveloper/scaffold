@@ -1,6 +1,6 @@
 dnl Macro para configurar los flags
 AC_DEFUN([CONFIGURE_FLAGS], [
-    CFLAGS_COMMON="-Wall -Wextra -Werror -fstack-protector-strong -Wshadow -Wformat=2 -Wstrict-overflow=5 -fstack-clash-protection -fPIE"
+    CFLAGS_COMMON="-Wall -Wextra -Werror -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE"
     CXXFLAGS_COMMON="$CFLAGS_COMMON"
     LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now -pie"
 
