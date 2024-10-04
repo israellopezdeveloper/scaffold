@@ -4,17 +4,18 @@ COVERAGE_OUTPUT = coverage
 # Reglas para generar cobertura de código con GCC
 coverage-GCC:
 	@$(MAKE) clean
-	@$(MAKE) check > /dev/null 2>&1
-	@$(GCOV) -o src $(srcdir)/src/*.c > /dev/null 2>&1
+	@$(MAKE) check
+	@$(GCOV) -o src $(srcdir)/src/*.c
 	@mkdir -p coverage/{html,json}
-	@$(LCOV) --capture --directory src --output-file coverage/coverage.info > /dev/null 2>&1
-	@$(GENHTML) coverage/coverage.info --output-directory coverage/html > /dev/null 2>&1
-	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's/\.\.\/include\//$(srcdir)\/src\//g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
+	@$(LCOV) --capture --directory src --output-file coverage/coverage.info
+	@$(LCOV) --extract coverage/coverage.info "*/src/*" --output-file coverage/filtered_coverage.info
+	@$(GENHTML) coverage/filtered_coverage.info --output-directory coverage/html
+	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
    $(GCOVR) --json-summary \
     --root $(srcdir)/src \
     --filter "$${FILTER_PATTERN}" \
-    -o coverage/json/coverage.json src > /dev/null 2>&1
-	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's/\.\.\/include\//$(srcdir)\/src\//g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
+    -o coverage/json/filtered_coverage.json src > /dev/null 2>&1
+	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
    $(GCOVR) --json-summary --root $(srcdir)/src \
     --filter "$${FILTER_PATTERN}" \
 		--fail-under-line 80 \
@@ -27,8 +28,13 @@ coverage-Clang:
 	@$(MAKE) check > /dev/null 2>&1
 	@$(LLVM_PROFDATA) merge -sparse default.profraw -o default.profdata
 	@mkdir -p coverage/{html,json} 
-	@$(LLVM_COV) show $$(find tests -maxdepth 1 -type f -executable -print | tr '\n' ' ') -instr-profile=default.profdata -format=html -output-dir=coverage/html
-	@$(LLVM_COV) export $$(find tests -maxdepth 1 -type f -executable -print | tr '\n' ' ') -instr-profile=default.profdata -format=text -summary-only | jq ".data[0].totals" | jq 'del(.regions, .instantiations, .mcdc)' > coverage/json/coverage.json
+	@$(LLVM_COV) show \
+    $$(find tests -type f -name '*_test' -executable | head -n 1) \
+    $(srcdir)/src \
+    -instr-profile=default.profdata \
+    -format=html \
+    -output-dir=coverage/html
+	@$(LLVM_COV) export $$(find tests -type f -name '*_test' -executable | head -n 1) -instr-profile=default.profdata -format=text -summary-only | jq ".data[0].totals" | jq 'del(.regions, .instantiations, .mcdc)' > coverage/json/coverage.json
 	@export LINE_COVERAGE=$$(jq -r '.lines.percent' coverage/json/coverage.json); \
   export LINE_COVERAGE_INT=$$(echo "$$LINE_COVERAGE" | awk '{ printf("%d\n", $$1 * 10) }'); \
 	if [ "$$LINE_COVERAGE_INT" -lt 800 ]; then \

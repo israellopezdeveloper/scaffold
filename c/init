@@ -247,3 +247,125 @@ echo "configure" >>.gitignore
 echo "install-sh" >>.gitignore
 echo "ltmain.sh" >>.gitignore
 echo "missing" >>.gitignore
+echo ".cache/" >>.gitignore
+echo "depcomp" >>.gitignore
+echo "test-driver" >>.gitignore
+echo "compile_commands.json" >>"${DEST_DIR}/.gitignore"
+
+echo "Generating folder structure"
+mkdir -p "${DEST_DIR}/"{src,include,tests}
+
+cat <<EOF >"${DEST_DIR}/src/main.c"
+#include <stdio.h>
+#include "mylib.h"
+
+int main() {
+    int a = 10, b = 5;
+
+    printf("Addition: %d + %d = %d\n", a, b, add(a, b));
+    printf("Subtraction: %d - %d = %d\n", a, b, subtract(a, b));
+    printf("Multiplication: %d * %d = %d\n", a, b, multiply(a, b));
+    printf("Division: %d / %d = %.2f\n", a, b, divide(a, b));
+
+    return 0;
+}
+EOF
+
+cat <<EOF >"${DEST_DIR}/src/mylib.c"
+#include "mylib.h"
+#include <stdio.h>
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int subtract(int a, int b) {
+    return a - b;
+}
+
+int multiply(int a, int b) {
+    return a * b;
+}
+
+float divide(int a, int b) {
+    if (b == 0) {
+        printf("Error: Division by zero.\n");
+        return 0;
+    }
+    return (float)a / b;
+}
+EOF
+
+cat <<EOF >"${DEST_DIR}/include/mylib.h"
+#ifndef MYLIB_H
+#define MYLIB_H
+
+// Function to add two integers
+int add(int a, int b);
+
+// Function to subtract two integers
+int subtract(int a, int b);
+
+// Function to multiply two integers
+int multiply(int a, int b);
+
+// Function to divide two integers (checks for division by 0)
+float divide(int a, int b);
+
+#endif
+EOF
+
+cat <<EOF >"${DEST_DIR}/tests/mylib_test.cpp"
+#include <gtest/gtest.h>
+#include "mylib.h"
+
+// Test for the add function
+TEST(MyLibTest, AddFunction) {
+    EXPECT_EQ(add(10, 5), 15);
+    EXPECT_EQ(add(-3, 3), 0);
+    EXPECT_EQ(add(0, 0), 0);
+}
+
+// Test for the subtract function
+TEST(MyLibTest, SubtractFunction) {
+    EXPECT_EQ(subtract(10, 5), 5);
+    EXPECT_EQ(subtract(-3, 3), -6);
+    EXPECT_EQ(subtract(0, 0), 0);
+}
+
+// Test for the multiply function
+TEST(MyLibTest, MultiplyFunction) {
+    EXPECT_EQ(multiply(10, 5), 50);
+    EXPECT_EQ(multiply(-3, 3), -9);
+    EXPECT_EQ(multiply(0, 5), 0);
+}
+
+// Test for the divide function
+TEST(MyLibTest, DivideFunction) {
+    EXPECT_FLOAT_EQ(divide(10, 5), 2.0);
+    EXPECT_FLOAT_EQ(divide(-9, 3), -3.0);
+    EXPECT_EQ(divide(10, 0), 0);  // Check division by zero handling
+}
+
+// Main function to run all the tests
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+EOF
+
+echo -e "\n" >>"${DEST_DIR}/Makefile.am"
+echo -e "bin_PROGRAMS = bin/my_program" >>"${DEST_DIR}/Makefile.am"
+echo -e "bin_my_program_SOURCES = src/main.c" >>"${DEST_DIR}/Makefile.am"
+echo -e "\n" >>"${DEST_DIR}/Makefile.am"
+echo -e "lib_LTLIBRARIES =  lib/libmylib.la" >>"${DEST_DIR}/Makefile.am"
+echo -e "lib_mylib_la_SOURCES = src/mylib.c include/mylib.h" >>"${DEST_DIR}/Makefile.am"
+echo -e "lib_mylib_la_LDFLAGS = -version-info 1:0:0" >>"${DEST_DIR}/Makefile.am"
+echo -e "\n" >>"${DEST_DIR}/Makefile.am"
+echo -e "check_PROGRAMS = tests/mylib_test" >>"${DEST_DIR}/Makefile.am"
+echo -e "tests_mylib_test_SOURCES = tests/mylib_test.cpp include/mylib.h" >>"${DEST_DIR}/Makefile.am"
+echo -e "tests_mylib_test_CXXFLAGS = \$(GTEST_INCLUDE)" >>"${DEST_DIR}/Makefile.am"
+echo -e "tests_mylib_test_LDADD = lib/libmylib.la \$(GTEST_LIBS)" >>"${DEST_DIR}/Makefile.am"
+echo -e "tests_mylib_test_LDFLAGS = -static -lpthread" >>"${DEST_DIR}/Makefile.am"
+echo -e "\n" >>"${DEST_DIR}/Makefile.am"
+echo -e "TESTS = tests/mylib_test" >>"${DEST_DIR}/Makefile.am"

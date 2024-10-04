@@ -1,137 +1,61 @@
-name: Push to main branch
+name: CI Main Branch
 
 on:
   push:
-    branches: ["main"]
-
-  workflow_dispatch:  # Permite ejecutar el workflow manualmente
-    inputs:
-      tag_name:
-        description: 'Tag name'
-        required: true
-      release_name:
-        description: 'Release name'
-        required: true
+    branches:
+      - main
 
 jobs:
-  documentation:
-    uses: ./.github/workflows/build-and-test.yml
+  create-docs:
+    uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: lopoeisr/ubuntu-make-doc:1.0
-      docker_image_options: --privileged --user root
-      mode: production
-      docs: true
-      tests: false
+      docker_image: 'lopoeisr/ubuntu-make-doc:1.0'
+      docker_options: '--privileged --user root'
+      commands: |
+        ./runme --docs --noclean --nocompile-commands
+        tar -czf docs.tar.gz build/docs
+      artifact_path: 'docs.tar.gz'
+      artifact_name: 'documentation'
 
-  gcc-production:
-    needs: [documentation]
-    uses: ./.github/workflows/build-and-test.yml
+  create-coverage:
+    uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: lopoeisr/ubuntu-make-gcc:1.0
-      docker_image_options: --privileged --user root
-      mode: production
-      docs: false
-      tests: true
+      docker_image: 'lopoeisr/ubuntu-make-gcc:1.0'
+      docker_options: '--privileged --user root'
+      commands: |
+        ./runme --coverage --noclean --nocompile-commands
+        tar -czf coverage.tar.gz build/coverage
+      artifact_path: 'coverage.tar.gz'
+      artifact_name: 'coverage'
 
-  clang-production:
-    needs: [documentation]
-    uses: ./.github/workflows/build-and-test.yml
+  test-gcc:
+    uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: lopoeisr/ubuntu-make-clang:1.0
-      docker_image_options: --privileged --user root
-      mode: production
-      docs: false
-      tests: true
+      docker_image: 'lopoeisr/ubuntu-make-gcc:1.0'
+      docker_options: '--privileged --user root'
+      commands: './runme --noclean --nocompile-commands'
 
-  gcc-memleak:
-    needs: [documentation]
-    uses: ./.github/workflows/build-and-test.yml
+  test-clang:
+    uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: lopoeisr/ubuntu-make-gcc:1.0
-      docker_image_options: --privileged --user root
-      mode: memleak
-      docs: false
-      tests: true
+      docker_image: 'lopoeisr/ubuntu-make-clang:1.0'
+      docker_options: '--privileged --user root'
+      commands: './runme --noclean --nocompile-commands'
 
-  clang-memleak:
-    needs: [documentation]
-    uses: ./.github/workflows/build-and-test.yml
+  leak-gcc:
+    uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: lopoeisr/ubuntu-make-clang:1.0
-      docker_image_options: --privileged --user root
-      mode: memleak
-      docs: false
-      tests: true
+      docker_image: 'lopoeisr/ubuntu-make-gcc:1.0'
+      docker_options: '--privileged --user root'
+      commands: |
+        ulimit -n 1024
+        ./runme --leak --noclean --nocompile-commands
 
-  gcc-coverage:
-    needs: [documentation]
-    uses: ./.github/workflows/build-and-test.yml
+  leak-clang:
+    uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: lopoeisr/ubuntu-make-gcc:1.0
-      docker_image_options: --privileged --user root
-      mode: coverage
-      docs: false
-      tests: true
-
-  clang-coverage:
-    needs: [documentation]
-    uses: ./.github/workflows/build-and-test.yml
-    with:
-      docker_image: lopoeisr/ubuntu-make-clang:1.0
-      docker_image_options: --privileged --user root
-      mode: coverage
-      docs: false
-      tests: true
-
-  create-release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: [build-and-test-gcc, build-and-test-clang]
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        fetch-depth: 0
-        recursive: true
-    - name: Get version number
-      run: echo "VERSION=$(cat .version)" >> $GITHUB_ENV
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.VERSION }}
-        release_name: Release ${{ env.VERSION }}
-        body: |
-          Release for ${{ env.VERSION }}
-          - GCC compiled libraries
-          - Clang compiled libraries
-    - name: Download GCC artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: gcc-libs-n-docs
-    - name: Download Clang artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: clang-libs-n-docs
-    - name: Upload GCC libraries to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./gcc-libs-n-docs.tar.gz
-        asset_name: gcc-libs-n-docs.tar.gz
-        asset_content_type: application/gzip
-    - name: Upload Clang libraries to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./clang-libs-n-docs.tar.gz
-        asset_name: clang-libs-n-docs.tar.gz
-        asset_content_type: application/gzip
-
+      docker_image: 'lopoeisr/ubuntu-make-clang:1.0'
+      docker_options: '--privileged --user root'
+      commands: |
+        ulimit -n 1024
+        ./runme --leak --noclean --nocompile-commands
