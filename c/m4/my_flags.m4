@@ -53,9 +53,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g"
-                    CXXFLAGS="-O0 -g"
-                    LDFLAGS="-O0 -g"
+                    CFLAGS="-O0 -g -fsanitize=address"
+                    CXXFLAGS="-O0 -g -fsanitize=address"
+                    LDFLAGS="-O0 -g -fsanitize=address"
                     MEMORY_LEAK_DIAGNOSTIC="valgrind --leak-check=full --show-leak-kinds=all -s"
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
