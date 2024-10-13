@@ -10,9 +10,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
     case "$build_mode" in
         production)
             AC_MSG_NOTICE([Compilando en modo producción])
-            CFLAGS="-O3 -fPIE -march=native -flto -funroll-loops $CFLAGS_COMMON"
-            CXXFLAGS="-O3 -fPIE -march=native -flto -funroll-loops $CXXFLAGS_COMMON"
-            LDFLAGS="-flto -pie $LDFLAGS_COMMON"
+            CFLAGS="-O3 -fPIE -march=native -funroll-loops $CFLAGS_COMMON"
+            CXXFLAGS="-O3 -fPIE -march=native -funroll-loops $CXXFLAGS_COMMON"
+            LDFLAGS="-pie $LDFLAGS_COMMON"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
