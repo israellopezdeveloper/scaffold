@@ -1,0 +1,37 @@
+[
+  {
+    "name": "nombreimagen",
+    "file": "file.Dockerfile",
+    "tag": "tag-{{arg1}}-{{arg2}}-{{DATE}}",
+    "args": [
+      {
+        "name": "arg1",
+        "value": 4
+      },
+      {
+        "name": "arg2",
+        "value": "valor"
+      }
+    ]
+  },
+  {
+    "name": "otraimagen",
+    "file": "otrofile.Dockerfile",
+    "tag": "imagen-{{argX}}-{{argY}}-{{argZ}}-{{DATE}}",
+    "args": [
+      {
+        "name": "argX",
+        "value": "Xvalue"
+      },
+      {
+        "name": "argY",
+        "value": "Yvalue"
+      },
+      {
+        "name": "argZ",
+        "value": "Zvalue"
+      }
+    ]
+  }
+]
+
