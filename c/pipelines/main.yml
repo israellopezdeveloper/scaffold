@@ -7,9 +7,10 @@ on:
 
 jobs:
   create-docs:
+    name: Generate documentation
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/ubuntu-make-doc:1.0'
+      docker_image: 'lopoeisr/make-doc:debian-bookworm_GCC-14_20241015001025'
       docker_options: '--privileged --user root'
       commands: |
         autoreconf --install
@@ -23,55 +24,60 @@ jobs:
       artifact_name: 'documentation'
 
   create-coverage:
+    name: Generate coverage report
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/ubuntu-make-gcc:1.0'
+      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241015000828'
       docker_options: '--privileged --user root'
       commands: |
-        ./runme --coverage --noclean --nocompile-commands
+        ./runme --coverage
         tar -czf coverage.tar.gz -C build/coverage .
       artifact_path: 'coverage.tar.gz'
       artifact_name: 'coverage'
 
   test-gcc:
+    name: Check and generate binaries using GCC
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/ubuntu-make-gcc:1.0'
+      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241015000828'
       docker_options: '--privileged --user root'
       commands: |
-        ./runme --noclean --nocompile-commands
-        tar -czf gcc-libs.tar.gz build/lib
+        ./runme
+        tar -czf gcc-libs.tar.gz -C build/lib .
       artifact_path: 'gcc-libs.tar.gz'
       artifact_name: 'gcc-libs'
 
   test-clang:
+    name: Check and generate binaries using Clang
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/ubuntu-make-clang:1.0'
+      docker_image: 'lopoeisr/make-clang:debian-bookworm_CLANG-19_20241015000828'
       docker_options: '--privileged --user root'
       commands: |
-        ./runme --noclean --nocompile-commands
-        tar -czf clang-libs.tar.gz build/lib
+        ./runme
+        tar -czf clang-libs.tar.gz -C build/lib .
       artifact_path: 'clang-libs.tar.gz'
       artifact_name: 'clang-libs'
 
   leak-gcc:
+    name: Check memory leaks on GCC
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/ubuntu-make-gcc:1.0'
+      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241015000828'
       docker_options: '--privileged --user root'
       commands: |
         ulimit -n 1024
-        ./runme --leak --noclean --nocompile-commands
+        ./runme --leak
 
   leak-clang:
+    name: Check memory leaks on Clang
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/ubuntu-make-clang:1.0'
+      docker_image: 'lopoeisr/make-clang:debian-bookworm_CLANG-19_20241015000828'
       docker_options: '--privileged --user root'
       commands: |
         ulimit -n 1024
-        ./runme --leak --noclean --nocompile-commands
+        ./runme --leak
 
   create-release:
     name: Create GitHub Release
@@ -154,4 +160,32 @@ jobs:
         asset_path: ./coverage.tar.gz
         asset_name: coverage.tar.gz
         asset_content_type: application/gzip
-
+    - name: Change to GitHub Pages branch
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git reset --hard
+        git checkout gh-pages
+        git clean -fd
+    - name: Download documentation
+      uses: actions/download-artifact@v3
+      with:
+        name: documentation
+    - name: Download Coverage
+      uses: actions/download-artifact@v3
+      with:
+        name: coverage
+    - name: Uncompress documentation and coverage
+      run: |
+        rm -rf docs || true
+        rm -rf coverage || true
+        mkdir docs || true
+        mkdir coverage || true
+        tar -xzf documentation.tar.gz -C docs && rm documentation.tar.gz
+        tar -xzf coverage.tar.gz -C coverage && rm coverage.tar.gz
+    - name: Deploy gh-pages
+      run: |
+        git add docs/
+        git add coverage/
+        git commit -m "Update GitHub Pages documentation for version ${{ env.VERSION }}"
+        git push --force --set-upstream origin gh-pages

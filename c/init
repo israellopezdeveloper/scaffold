@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Set strict mode: Fail early and handle errors
 set -eu
@@ -13,12 +13,12 @@ SCRIPT_PATH=$(realpath "$(dirname "$0")")
 SCRIPT_PATH_NAME=$(basename "${SCRIPT_PATH}")
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-	echo "Must be inside a git repository"
-	PROJECT_GIT_URL="https://github.com/mierda"
+  echo "Must be inside a git repository"
+  PROJECT_GIT_URL="https://github.com/mierda"
 else
-	REMOTE_URL=$(git remote get-url origin)
-	REPO_PATH=$(echo "$REMOTE_URL" | sed -e 's/^git@github.com://' -e 's/\.git$//' -e 's/:/\//')
-	PROJECT_GIT_URL="https://github.com/$REPO_PATH"
+  REMOTE_URL=$(git remote get-url origin)
+  REPO_PATH=$(echo "$REMOTE_URL" | sed -e 's/^git@github.com://' -e 's/\.git$//' -e 's/:/\//')
+  PROJECT_GIT_URL="https://github.com/$REPO_PATH"
 fi
 
 # Path to base files
@@ -37,110 +37,110 @@ GENERATED_FILES=""
 
 # Help function
 usage() {
-	echo "Usage: $0 [options]"
-	echo
-	echo "Options:"
-	echo "  -n, --name          Project name"
-	echo "  -v, --version       Project version (semver format)"
-	echo "  -e, --email         Contact email"
-	echo "  -p, --person        Your name"
-	echo "  -j, --position      Your position"
-	echo "  -h, --help          Show this help message"
-	echo
+  echo "Usage: $0 [options]"
+  echo
+  echo "Options:"
+  echo "  -n, --name          Project name"
+  echo "  -v, --version       Project version (semver format)"
+  echo "  -e, --email         Contact email"
+  echo "  -p, --person        Your name"
+  echo "  -j, --position      Your position"
+  echo "  -h, --help          Show this help message"
+  echo
 }
 
 # Function to validate semver
 validate_semver() {
-	# Semver format: major.minor.patch (optional pre-release and metadata)
-	echo "$1" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$' || return 1
+  # Semver format: major.minor.patch (optional pre-release and metadata)
+  echo "$1" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$' || return 1
 }
 
 # Function to validate email
 validate_email() {
-	# Regular expression to validate email
-	echo "$1" | grep -Eq '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' || return 1
+  # Regular expression to validate email
+  echo "$1" | grep -Eq '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' || return 1
 }
 
 # Function to prompt user input
 prompt_user_input() {
-	if [ -z "$PROJECT_NAME" ]; then
-		printf "Enter the project name: "
-		read -r PROJECT_NAME </dev/tty
-	fi
+  if [ -z "$PROJECT_NAME" ]; then
+    printf "Enter the project name: "
+    read -r PROJECT_NAME </dev/tty
+  fi
 
-	# Repeat until a valid version is entered
-	while [ -z "$VERSION" ]; do
-		printf "Enter the version (semver format): "
-		read -r VERSION </dev/tty
+  # Repeat until a valid version is entered
+  while [ -z "$VERSION" ]; do
+    printf "Enter the version (semver format): "
+    read -r VERSION </dev/tty
 
-		if ! validate_semver "$VERSION"; then
-			echo "Error: The version is not valid. It must follow the semver format (e.g., 1.0.0)"
-			VERSION="" # Reset VERSION to repeat the loop
-		fi
-	done
+    if ! validate_semver "$VERSION"; then
+      echo "Error: The version is not valid. It must follow the semver format (e.g., 1.0.0)"
+      VERSION="" # Reset VERSION to repeat the loop
+    fi
+  done
 
-	# Repeat until a valid email is entered
-	while [ -z "$EMAIL" ]; do
-		printf "Enter the email: "
-		read -r EMAIL </dev/tty
+  # Repeat until a valid email is entered
+  while [ -z "$EMAIL" ]; do
+    printf "Enter the email: "
+    read -r EMAIL </dev/tty
 
-		if ! validate_email "$EMAIL"; then
-			echo "Error: The email is not valid. It must follow the format user@example.com"
-			EMAIL="" # Reset EMAIL to repeat the loop
-		fi
-	done
+    if ! validate_email "$EMAIL"; then
+      echo "Error: The email is not valid. It must follow the format user@example.com"
+      EMAIL="" # Reset EMAIL to repeat the loop
+    fi
+  done
 
-	# Prompt for name if not set
-	if [ -z "$NAME" ]; then
-		printf "Enter your name: "
-		read -r NAME </dev/tty
-	fi
+  # Prompt for name if not set
+  if [ -z "$NAME" ]; then
+    printf "Enter your name: "
+    read -r NAME </dev/tty
+  fi
 
-	# Prompt for position if not set
-	if [ -z "$POSITION" ]; then
-		printf "Enter your position: "
-		read -r POSITION </dev/tty
-	fi
+  # Prompt for position if not set
+  if [ -z "$POSITION" ]; then
+    printf "Enter your position: "
+    read -r POSITION </dev/tty
+  fi
 }
 
 # Function to process template files and replace variables
 process_template() {
-	template_file="$1"
-	output_dir="$2"
+  template_file="$1"
+  output_dir="$2"
 
-	# Extract the template file name
-	output_file="$output_dir/$(basename "$template_file")"
+  # Extract the template file name
+  output_file="$output_dir/$(basename "$template_file")"
 
-	# Register generated file
-	GENERATED_FILES="$GENERATED_FILES $output_file"
+  # Register generated file
+  GENERATED_FILES="$GENERATED_FILES $output_file"
 
-	# Replace __PROJECT_NAME__, __VERSION__, __EMAIL__, __NAME__, and __POSITION__ in the file
-	if ! sed \
-		-e "s|__PROJECT_NAME__|$PROJECT_NAME|g" \
-		-e "s|__VERSION__|$VERSION|g" \
-		-e "s|__EMAIL__|$EMAIL|g" \
-		-e "s|SCRIPT_PATH_NAME|$SCRIPT_PATH_NAME|g" \
-		-e "s|__PROJECT_GIT_URL__|$PROJECT_GIT_URL|g" \
-		-e "s|__YEAR__|$YEAR|g" \
-		-e "s|__HOLDER__|$HOLDER|g" \
-		-e "s|__NAME__|$NAME|g" \
-		-e "s|__POSITION__|$POSITION|g" \
-		"$template_file" >"$output_file"; then
-		echo "Error: Could not process the file $template_file."
-		exit 1
-	fi
+  # Replace __PROJECT_NAME__, __VERSION__, __EMAIL__, __NAME__, and __POSITION__ in the file
+  if ! sed \
+    -e "s|__PROJECT_NAME__|$PROJECT_NAME|g" \
+    -e "s|__VERSION__|$VERSION|g" \
+    -e "s|__EMAIL__|$EMAIL|g" \
+    -e "s|SCRIPT_PATH_NAME|$SCRIPT_PATH_NAME|g" \
+    -e "s|__PROJECT_GIT_URL__|$PROJECT_GIT_URL|g" \
+    -e "s|__YEAR__|$YEAR|g" \
+    -e "s|__HOLDER__|$HOLDER|g" \
+    -e "s|__NAME__|$NAME|g" \
+    -e "s|__POSITION__|$POSITION|g" \
+    "$template_file" >"$output_file"; then
+    echo "Error: Could not process the file $template_file."
+    exit 1
+  fi
 }
 
 # Delete generated files if the script fails or is interrupted
 cleanup() {
-	ret=$?
-	if [ $ret -ne 0 ]; then
-		echo "Cleaning up generated files..."
-		for file in $GENERATED_FILES; do
-			[ -f "$file" ] && rm -f "$file"
-		done
-		echo "Files deleted."
-	fi
+  ret=$?
+  if [ $ret -ne 0 ]; then
+    echo "Cleaning up generated files..."
+    for file in $GENERATED_FILES; do
+      [ -f "$file" ] && rm -f "$file"
+    done
+    echo "Files deleted."
+  fi
 }
 
 # Handle interrupt signal (Ctrl+C)
@@ -149,46 +149,46 @@ trap 'cleanup' EXIT
 
 # Process command-line arguments
 while [ $# -gt 0 ]; do
-	case "$1" in
-	-n | --name)
-		shift
-		PROJECT_NAME="$1"
-		;;
-	-v | --version)
-		shift
-		VERSION="$1"
-		if ! validate_semver "$VERSION"; then
-			echo "Error: The version is not valid. It must follow the semver format (e.g., 1.0.0)"
-			exit 1
-		fi
-		;;
-	-e | --email)
-		shift
-		EMAIL="$1"
-		if ! validate_email "$EMAIL"; then
-			echo "Error: The email is not valid. It must follow the format user@example.com"
-			exit 1
-		fi
-		;;
-	-p | --person)
-		shift
-		NAME="$1"
-		;;
-	-j | --position)
-		shift
-		POSITION="$1"
-		;;
-	-h | --help)
-		usage
-		exit 0
-		;;
-	*)
-		echo "Error: Unknown option: $1"
-		usage
-		exit 1
-		;;
-	esac
-	shift
+  case "$1" in
+  -n | --name)
+    shift
+    PROJECT_NAME="$1"
+    ;;
+  -v | --version)
+    shift
+    VERSION="$1"
+    if ! validate_semver "$VERSION"; then
+      echo "Error: The version is not valid. It must follow the semver format (e.g., 1.0.0)"
+      exit 1
+    fi
+    ;;
+  -e | --email)
+    shift
+    EMAIL="$1"
+    if ! validate_email "$EMAIL"; then
+      echo "Error: The email is not valid. It must follow the format user@example.com"
+      exit 1
+    fi
+    ;;
+  -p | --person)
+    shift
+    NAME="$1"
+    ;;
+  -j | --position)
+    shift
+    POSITION="$1"
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "Error: Unknown option: $1"
+    usage
+    exit 1
+    ;;
+  esac
+  shift
 done
 
 # Prompt the user for any missing data interactively
@@ -196,38 +196,38 @@ prompt_user_input
 
 # Process templates
 for f in ${FILES_DIR}/*; do
-	process_template "${f}" "${DEST_DIR}"
+  process_template "${f}" "${DEST_DIR}"
 done
 
 # Create necessary directories and link files
 mkdir -p {m4,.mk}
 mkdir -p .github/workflows
 for f in ${M4_DIR}/*; do
-	ln -s "$(realpath --relative-to="${DEST_DIR}/m4" "${f}")" "${DEST_DIR}/m4"
+  ln -s "$(realpath --relative-to="${DEST_DIR}/m4" "${f}")" "${DEST_DIR}/m4"
 done
 
 for f in ${MK_DIR}/*; do
-	ln -s "$(realpath --relative-to="${DEST_DIR}/.mk" "${f}")" "${DEST_DIR}/.mk"
+  ln -s "$(realpath --relative-to="${DEST_DIR}/.mk" "${f}")" "${DEST_DIR}/.mk"
 done
 
 for f in ${PIPELINE_DIR}/*; do
-	cp "${f}" "${DEST_DIR}/.github/workflows"
+  cp "${f}" "${DEST_DIR}/.github/workflows"
 done
 
 # Output information
 echo "Generating files in $DEST_DIR"
 for f in ${FILES_DIR}/*; do
-	echo "  - $(basename "${f}")"
+  echo "  - $(basename "${f}")"
 done
 
 echo "Generating macros in $DEST_DIR"
 for f in ${M4_DIR}/*; do
-	echo "  - m4/$(basename "${f}")"
+  echo "  - m4/$(basename "${f}")"
 done
 
 echo "Generating makefile configuration in $DEST_DIR"
 for f in ${MK_DIR}/*; do
-	echo "  - .mk/$(basename "${f}")"
+  echo "  - .mk/$(basename "${f}")"
 done
 
 echo "Generating gitignore file"
