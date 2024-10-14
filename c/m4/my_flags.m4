@@ -10,8 +10,8 @@ AC_DEFUN([CONFIGURE_FLAGS], [
     case "$build_mode" in
         production)
             AC_MSG_NOTICE([Compilando en modo producción])
-            CFLAGS="-O3 -fPIE -march=native -funroll-loops $CFLAGS_COMMON"
-            CXXFLAGS="-O3 -fPIE -march=native -funroll-loops $CXXFLAGS_COMMON"
+            CFLAGS="-O3 -fPIE -march=native $CFLAGS_COMMON"
+            CXXFLAGS="-O3 -fPIE -march=native $CXXFLAGS_COMMON"
             LDFLAGS="-pie $LDFLAGS_COMMON"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
@@ -27,16 +27,16 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             ;;
         memleak)
             # Verificar si libasan está disponible
-            AC_MSG_CHECKING([for libasan])
-            AC_CHECK_LIB([asan], [__asan_init], [has_libasan=yes], [has_libasan=no])
-            if test "$has_libasan" = "yes"; then
-                LIBS="$LIBS -lasan"
-            else
-                AC_MSG_ERROR([libasan not found])
-            fi
             AC_MSG_NOTICE([Compilando con detección de fugas de memoria (AddressSanitizer)])
             case "$COMPILER" in
                 GCC)
+                    AC_MSG_CHECKING([for libasan])
+                    AC_CHECK_LIB([asan], [__asan_init], [has_libasan=yes], [has_libasan=no])
+                    if test "$has_libasan" = "yes"; then
+                        LIBS="$LIBS -lasan"
+                    else
+                        AC_MSG_ERROR([libasan not found])
+                    fi
                     AC_CHECK_TOOL([VALGRIND], [valgrind], [no])
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
@@ -53,10 +53,10 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g -fsanitize=address"
-                    CXXFLAGS="-O0 -g -fsanitize=address"
-                    LDFLAGS="-O0 -g -fsanitize=address"
-                    MEMORY_LEAK_DIAGNOSTIC="valgrind --leak-check=full --show-leak-kinds=all -s"
+                    CFLAGS="-O0 -g -fsanitize=address -static-libasan"
+                    CXXFLAGS="-O0 -g -fsanitize=address -static-libasan"
+                    LDFLAGS="-O0 -g -fsanitize=address -static-libasan -rtlib=compiler-rt"
+                    MEMORY_LEAK_DIAGNOSTIC="ASAN_OPTIONS=detect_leaks=1 "
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
                     ;;
