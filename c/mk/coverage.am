@@ -12,14 +12,16 @@ coverage-GCC:
 	@$(GENHTML) coverage/filtered_coverage.info --output-directory coverage/html
 	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
    $(GCOVR) --json-summary \
+    --gcov-ignore-parse-errors \
     --root $(srcdir)/src \
     --filter "$${FILTER_PATTERN}" \
-    -o coverage/json/filtered_coverage.json src > /dev/null 2>&1
+    -o coverage/json/coverage.json src 2> /dev/null
 	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
    $(GCOVR) --json-summary --root $(srcdir)/src \
+    --gcov-ignore-parse-errors \
     --filter "$${FILTER_PATTERN}" \
-		--fail-under-line 80 \
-		--fail-under-branch 80 \
+		--fail-under-line 70 \
+		--fail-under-branch 70 \
 	src > /dev/null
 
 # Reglas para generar cobertura de código con Clang

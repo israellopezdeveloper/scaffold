@@ -5,8 +5,8 @@ set -eu
 
 # Function to handle Ctrl+C (SIGINT)
 cleanup() {
-	echo "Script interrupted. Cleaning up..."
-	exit 1
+  echo "Script interrupted. Cleaning up..."
+  exit 1
 }
 
 # Trap Ctrl+C (SIGINT) and call cleanup function
@@ -14,210 +14,250 @@ trap cleanup INT
 
 # Function to show help message
 show_help() {
-	echo "Usage: $0 [-u URL] [-d DIRECTORY]"
-	echo "    -u, --url         GitHub repository URL"
-	echo "    -d, --directory   Directory to clone the repository into"
-	echo "    -h, --help        Show this help message"
+  echo "Usage: $0 [-u URL] [-d DIRECTORY]"
+  echo "    -u, --url         GitHub repository URL"
+  echo "    -d, --directory   Directory to clone the repository into"
+  echo "    -h, --help        Show this help message"
 }
 
 # Function to create the project directory
 create_directory() {
-	if [ ! -d "$directory" ]; then
-		printf "Creating directory %s...\n" "$directory"
-		mkdir -p "$directory"
-		if [ $? -ne 0 ]; then
-			echo "Error: Failed to create directory $directory" >&2
-			exit 1
-		fi
-	fi
+  if [ ! -d "$directory" ]; then
+    printf "Creating directory %s...\n" "$directory"
+    mkdir -p "$directory"
+    if [ $? -ne 0 ]; then
+      echo "Error: Failed to create directory $directory" >&2
+      exit 1
+    fi
+  fi
 }
 
 # Function to initialize a Git repository
 initialize_git_repo() {
-	printf "Initializing Git repository in %s...\n" "$directory"
-	cd "$directory" || exit
-	git init
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to initialize Git repository in $directory" >&2
-		exit 1
-	fi
+  printf "Initializing Git repository in %s...\n" "$directory"
+  cd "$directory" || exit
+  git init
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to initialize Git repository in $directory" >&2
+    exit 1
+  fi
 }
 
 # Function to add Git remote origin
 add_git_remote() {
-	printf "Adding Git remote origin: %s\n" "$url"
-	git remote add origin "$url"
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to add Git remote origin" >&2
-		exit 1
-	fi
+  printf "Adding Git remote origin: %s\n" "$url"
+  git remote add origin "$url"
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to add Git remote origin" >&2
+    exit 1
+  fi
 }
 
 # Function to add Git submodule
 add_git_submodule() {
-	printf "Adding Git submodule: git@github.com:israellopezdeveloper/scaffold.git to .scaffold\n"
-	git submodule add git@github.com:israellopezdeveloper/scaffold.git .scaffold
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to add submodule to .scaffold" >&2
-		exit 1
-	fi
+  printf "Adding Git submodule: git@github.com:israellopezdeveloper/scaffold.git to .scaffold\n"
+  git submodule add git@github.com:israellopezdeveloper/scaffold.git .scaffold
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to add submodule to .scaffold" >&2
+    exit 1
+  fi
 }
 
 # Function to select programming language
 select_language() {
-	if [ -d ".scaffold" ]; then
-		printf "Fetching available programming languages...\n"
-		# Get the list of directories inside .scaffold
-		options=$(find .scaffold -mindepth 1 -maxdepth 1 \( -type d -o -type l -xtype d \) -not -name '.*' -exec basename {} \;)
+  if [ -d ".scaffold" ]; then
+    printf "Fetching available programming languages...\n"
+    # Get the list of directories inside .scaffold
+    options=$(find .scaffold -mindepth 1 -maxdepth 1 \( -type d -o -type l -xtype d \) -not -name '.*' -exec basename {} \;)
 
-		if [ -z "$options" ]; then
-			echo "Error: No options found in .scaffold directory" >&2
-			exit 1
-		fi
+    if [ -z "$options" ]; then
+      echo "Error: No options found in .scaffold directory" >&2
+      exit 1
+    fi
 
-		echo "Please select a programming language:"
-		i=1
-		for option in $options; do
-			echo "$i) $option"
-			i=$((i + 1))
-		done
+    echo "Please select a programming language:"
+    i=1
+    for option in $options; do
+      echo "$i) $option"
+      i=$((i + 1))
+    done
 
-		# Read user selection
-		printf "Enter the number of your choice: "
-		read choice </dev/tty
+    # Read user selection
+    printf "Enter the number of your choice: "
+    read choice </dev/tty
 
-		# Validate the user's selection
-		i=1
-		selected=""
-		for option in $options; do
-			if [ "$i" = "$choice" ]; then
-				selected="$option"
-				break
-			fi
-			i=$((i + 1))
-		done
+    # Validate the user's selection
+    i=1
+    selected=""
+    for option in $options; do
+      if [ "$i" = "$choice" ]; then
+        selected="$option"
+        break
+      fi
+      i=$((i + 1))
+    done
 
-		if [ -z "$selected" ]; then
-			echo "Error: Invalid selection" >&2
-			exit 1
-		fi
+    if [ -z "$selected" ]; then
+      echo "Error: Invalid selection" >&2
+      exit 1
+    fi
 
-		LANGUAGE="$selected"
-		printf "You selected: %s\n" "$LANGUAGE"
-	else
-		echo "Error: .scaffold directory does not exist" >&2
-		exit 1
-	fi
+    LANGUAGE="$selected"
+    printf "You selected: %s\n" "$LANGUAGE"
+  else
+    echo "Error: .scaffold directory does not exist" >&2
+    exit 1
+  fi
 }
 
 # Function to execute the init script
 execute_init_script() {
-	init_script=".scaffold/$LANGUAGE/init"
-	if [ -f "$init_script" ]; then
-		printf "Executing init script for %s...\n" "$LANGUAGE"
-		sh "$init_script"
-		if [ $? -ne 0 ]; then
-			echo "Error: Failed to execute init script for $LANGUAGE" >&2
-			exit 1
-		fi
-	else
-		echo "Error: No init script found for $LANGUAGE at $init_script" >&2
-		exit 1
-	fi
+  init_script=".scaffold/$LANGUAGE/init"
+  if [ -f "$init_script" ]; then
+    printf "Executing init script for %s...\n" "$LANGUAGE"
+    sh "$init_script"
+    if [ $? -ne 0 ]; then
+      echo "Error: Failed to execute init script for $LANGUAGE" >&2
+      exit 1
+    fi
+  else
+    echo "Error: No init script found for $LANGUAGE at $init_script" >&2
+    exit 1
+  fi
 }
 
 # Function to commit changes
 commit_changes() {
-	printf "Committing changes to the repository...\n"
-	git add .
-	git commit -m "Initial commit after scaffolding for $LANGUAGE"
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to commit changes" >&2
-		exit 1
-	fi
+  printf "Committing changes to the repository...\n"
+  git add .
+  git commit -m "Initial commit after scaffolding for $LANGUAGE"
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to commit changes" >&2
+    exit 1
+  fi
 }
 
 # Function to push changes to remote repository
 push_changes() {
-	printf "Pushing changes to remote repository...\n"
-	git push -u origin master
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to push changes to remote repository" >&2
-		exit 1
-	fi
+  printf "Pushing changes to remote repository...\n"
+  git push -u origin master
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to push changes to remote repository" >&2
+    exit 1
+  fi
 }
 
 # Function to create and switch to orphan branch 'metadata-branch'
 create_metadata_branch() {
-	printf "Creating orphan branch 'metadata-branch'...\n"
-	git checkout --orphan metadata-branch
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to create orphan branch 'metadata-branch'" >&2
-		exit 1
-	fi
-	git rm -rf .
+  printf "Creating orphan branch 'metadata-branch'...\n"
+  git checkout --orphan metadata-branch
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to create orphan branch 'metadata-branch'" >&2
+    exit 1
+  fi
+  git rm -rf .
+}
+
+# Function to create and populate gh-pages branch
+create_gh_pages_branch() {
+  printf "Creating orphan branch 'gh-pages'...\n"
+
+  # Create the orphan branch
+  git checkout --orphan gh-pages
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to create orphan branch 'gh-pages'" >&2
+    exit 1
+  fi
+
+  # Remove all files in the branch
+  git rm -rf .
+
+  # Add index.html from .gh-pages directory
+  if [ -f ".gh-pages/index.html" ]; then
+    printf "Adding index.html to gh-pages branch...\n"
+    cp .gh-pages/index.html .
+    git add index.html
+  else
+    echo "Error: No index.html found in .gh-pages directory" >&2
+    exit 1
+  fi
+
+  # Commit the index.html file
+  git commit -m "Add index.html to gh-pages branch"
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to commit index.html to gh-pages branch" >&2
+    exit 1
+  fi
+
+  # Push the gh-pages branch to the remote repository
+  printf "Pushing gh-pages branch to remote...\n"
+  git push -u origin gh-pages
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to push gh-pages branch to remote" >&2
+    exit 1
+  fi
 }
 
 # Function to collect metadata interactively
 collect_metadata() {
-	printf "Enter technologies (comma-separated, spaces will be handled): $LANGUAGE, "
-	read technologies </dev/tty
+  printf "Enter technologies (comma-separated, spaces will be handled): $LANGUAGE, "
+  read technologies </dev/tty
 
-	# Append the selected language to the technologies list
-	technologies="$technologies, $LANGUAGE"
+  # Append the selected language to the technologies list
+  technologies="$technologies, $LANGUAGE"
 
-	printf "Enter repository name in English: "
-	read name_english </dev/tty
+  printf "Enter repository name in English: "
+  read name_english </dev/tty
 
-	printf "Enter repository description in English: "
-	read desc_english </dev/tty
+  printf "Enter repository description in English: "
+  read desc_english </dev/tty
 
-	printf "Enter repository name in Spanish: "
-	read name_spanish </dev/tty
+  printf "Enter repository name in Spanish: "
+  read name_spanish </dev/tty
 
-	printf "Enter repository description in Spanish: "
-	read desc_spanish </dev/tty
+  printf "Enter repository description in Spanish: "
+  read desc_spanish </dev/tty
 
-	printf "Enter repository name in Chinese: "
-	read name_chinese </dev/tty
+  printf "Enter repository name in Chinese: "
+  read name_chinese </dev/tty
 
-	printf "Enter repository description in Chinese: "
-	read desc_chinese </dev/tty
+  printf "Enter repository description in Chinese: "
+  read desc_chinese </dev/tty
 }
 
 # Function to ask for image path, verify, and convert if needed
 handle_image() {
-	printf "Enter the path to the repository logo image: "
-	read image_path </dev/tty
+  printf "Enter the path to the repository logo image: "
+  read image_path </dev/tty
 
-	if [ ! -f "$image_path" ]; then
-		echo "Error: File does not exist at $image_path" >&2
-		exit 1
-	fi
+  if [ ! -f "$image_path" ]; then
+    echo "Error: File does not exist at $image_path" >&2
+    exit 1
+  fi
 
-	# Get the file extension
-	extension="${image_path##*.}"
+  # Get the file extension
+  extension="${image_path##*.}"
 
-	if [ "$extension" != "png" ]; then
-		printf "Converting image to PNG format...\n"
-		convert "$image_path" logo.png
-		if [ $? -ne 0 ]; then
-			echo "Error: Failed to convert image to PNG" >&2
-			exit 1
-		fi
-	else
-		printf "Image is already in PNG format. Copying to logo.png...\n"
-		cp "$image_path" logo.png
-		if [ $? -ne 0 ]; then
-			echo "Error: Failed to copy image to logo.png" >&2
-			exit 1
-		fi
-	fi
+  if [ "$extension" != "png" ]; then
+    printf "Converting image to PNG format...\n"
+    convert "$image_path" logo.png
+    if [ $? -ne 0 ]; then
+      echo "Error: Failed to convert image to PNG" >&2
+      exit 1
+    fi
+  else
+    printf "Image is already in PNG format. Copying to logo.png...\n"
+    cp "$image_path" logo.png
+    if [ $? -ne 0 ]; then
+      echo "Error: Failed to copy image to logo.png" >&2
+      exit 1
+    fi
+  fi
 }
 
 # Function to generate metadata.json
 generate_metadata_json() {
-	cat <<EOF >metadata.json
+  cat <<EOF >metadata.json
 {
   "technologies": [$(echo "$technologies" | sed 's/,/\", \"/g' | sed 's/^/\"/;s/$/\"/')],
   "lang": {
@@ -240,20 +280,20 @@ EOF
 
 # Function to commit and push metadata.json to 'metadata-branch'
 commit_metadata() {
-	printf "Committing metadata.json and logo.png...\n"
-	git add metadata.json logo.png
-	git commit -m "Add repository metadata and logo"
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to commit metadata" >&2
-		exit 1
-	fi
+  printf "Committing metadata.json and logo.png...\n"
+  git add metadata.json logo.png
+  git commit -m "Add repository metadata and logo"
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to commit metadata" >&2
+    exit 1
+  fi
 
-	printf "Pushing metadata branch to remote...\n"
-	git push -u origin metadata-branch
-	if [ $? -ne 0 ]; then
-		echo "Error: Failed to push metadata branch to remote" >&2
-		exit 1
-	fi
+  printf "Pushing metadata branch to remote...\n"
+  git push -u origin metadata-branch
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to push metadata branch to remote" >&2
+    exit 1
+  fi
 }
 
 # Main logic starts here
@@ -265,48 +305,48 @@ LANGUAGE=""
 
 # Process input parameters manually (POSIX-compliant way)
 while [ $# -gt 0 ]; do
-	case "$1" in
-	-u | --url)
-		if [ -n "$2" ]; then
-			url="$2"
-			shift
-		else
-			echo "Error: Missing argument for $1" >&2
-			exit 1
-		fi
-		;;
-	-d | --directory)
-		if [ -n "$2" ]; then
-			directory="$2"
-			shift
-		else
-			echo "Error: Missing argument for $1" >&2
-			exit 1
-		fi
-		;;
-	-h | --help)
-		show_help
-		exit 0
-		;;
-	*)
-		echo "Error: Unrecognized option $1" >&2
-		show_help
-		exit 1
-		;;
-	esac
-	shift
+  case "$1" in
+  -u | --url)
+    if [ -n "$2" ]; then
+      url="$2"
+      shift
+    else
+      echo "Error: Missing argument for $1" >&2
+      exit 1
+    fi
+    ;;
+  -d | --directory)
+    if [ -n "$2" ]; then
+      directory="$2"
+      shift
+    else
+      echo "Error: Missing argument for $1" >&2
+      exit 1
+    fi
+    ;;
+  -h | --help)
+    show_help
+    exit 0
+    ;;
+  *)
+    echo "Error: Unrecognized option $1" >&2
+    show_help
+    exit 1
+    ;;
+  esac
+  shift
 done
 
 # Ask for URL if not provided
 if [ -z "$url" ]; then
-	printf "Enter the GitHub repository URL: "
-	read url </dev/tty
+  printf "Enter the GitHub repository URL: "
+  read url </dev/tty
 fi
 
 # Ask for directory if not provided
 if [ -z "$directory" ]; then
-	printf "Enter the directory to clone the repository into: "
-	read directory </dev/tty
+  printf "Enter the directory to clone the repository into: "
+  read directory </dev/tty
 fi
 
 # Create the directory and set up Git repository and submodule
@@ -329,5 +369,8 @@ collect_metadata
 handle_image
 generate_metadata_json
 commit_metadata
+
+# Call the function to create and populate the gh-pages branch
+create_gh_pages_branch
 
 echo "Setup complete. Metadata and logo saved to 'metadata-branch'."

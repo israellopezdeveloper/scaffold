@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Set strict mode: Fail early and handle errors
+set -eu
+
+# Initial variables
+SCRIPT_PATH=$(realpath "$(dirname "$0")")
+
+# Path to base files
+FILES_DIR="$SCRIPT_PATH/files"
+PIPELINE_DIR="$SCRIPT_PATH/pipelines"
+
+# Destination path for copying files
+DEST_DIR=$(pwd)
+
+# Generated files
+GENERATED_FILES=""
+
+# Help function
+usage() {
+  echo "Usage: $0 [options]"
+  echo
+  echo "Options:"
+  echo "  -n, --name          Project name"
+  echo "  -v, --version       Project version (semver format)"
+  echo "  -e, --email         Contact email"
+  echo "  -p, --person        Your name"
+  echo "  -j, --position      Your position"
+  echo "  -h, --help          Show this help message"
+  echo
+}
+
+# Delete generated files if the script fails or is interrupted
+cleanup() {
+  ret=$?
+  if [ $ret -ne 0 ]; then
+    echo "Cleaning up generated files..."
+    for file in $GENERATED_FILES; do
+      [ -f "$file" ] && rm -f "$file"
+    done
+    echo "Files deleted."
+  fi
+}
+
+# Handle interrupt signal (Ctrl+C)
+trap 'exit 1' INT
+trap 'cleanup' EXIT
+
+# Copy files
+cp ${FILES_DIR}/* ${DEST_DIR}
+
+# Create necessary directories and link files
+mkdir -p .github/workflows
+
+for f in ${PIPELINE_DIR}/*; do
+  cp "${f}" "${DEST_DIR}/.github/workflows"
+done
+
+# Output information
+echo "Generating files in $DEST_DIR"
+for f in ${FILES_DIR}/*; do
+  echo "  - $(basename "${f}")"
+done
+
+echo "Generating gitignore file"

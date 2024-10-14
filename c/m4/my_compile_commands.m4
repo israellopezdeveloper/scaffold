@@ -3,7 +3,7 @@ AC_DEFUN([COMPILE_COMMANDS], [
     # Añadir la opción --enable-compile-commands
     AC_ARG_ENABLE([compile-commands],
         [AS_HELP_STRING([--enable-compile-commands], [Generate compile_commands.json using Bear])],
-        [enable_compile_commands=$enableval], [enable_compile_commands=yes])
+        [enable_compile_commands=$enableval], [enable_compile_commands=no])
 
     if test "$enable_compile_commands" = "yes"; then
       AC_PATH_PROG([BEAR], [bear], [no])

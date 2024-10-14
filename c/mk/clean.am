@@ -4,5 +4,6 @@ maintainer-clean-local:
 		$(srcdir)/compile $(srcdir)/configure~ $(srcdir)/configure \
 		$(srcdir)/ar-lib $(srcdir)/config.guess $(srcdir)/include/config.h.in \
 		$(srcdir)/include/config.h.in~ $(srcdir)/config.sub $(srcdir)/ltmain.sh \
-    $(srcdir)/configure.ac~
+    $(srcdir)/configure.ac~ $(srcdir)/m4/libtool.m4 $(srcdir)/m4/ltoptions.m4 \
+    $(srcdir)/m4/ltsugar.m4 $(srcdir)/m4/ltversion.m4 $(srcdir)/m4/lt~obsolete.m4
 
