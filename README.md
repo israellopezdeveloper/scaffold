@@ -16,7 +16,7 @@ Follow the steps below to create a new repository with this tool:
 1. Create a **new, empty repository** on GitHub.
 2. In the local directory where you want to set up the new repository, execute the following command:
     ```bash
-    https://github.com/israellopezdeveloper/scaffold/blob/main/create_repo
+    bash <(curl -s https://raw.githubusercontent.com/israellopezdeveloper/scaffold/refs/heads/main/create_repo)
     ```
 3. Follow the on-screen instructions to complete the setup process.
 
