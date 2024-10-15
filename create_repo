@@ -176,7 +176,7 @@ create_gh_pages_branch() {
   printf "Adding index.html to gh-pages branch...\n"
   mkdir .gh-pages
   curl -s https://raw.githubusercontent.com/israellopezdeveloper/scaffold/refs/heads/main/.gh-pages/index.html >.gh-pages/index.html
-  git add index.html
+  git add .gh-pages/index.html
 
   # Commit the index.html file
   git commit -m "Add index.html to gh-pages branch"
