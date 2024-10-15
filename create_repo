@@ -175,7 +175,7 @@ create_gh_pages_branch() {
   # Add index.html from .gh-pages directory
   if [ -f ".gh-pages/index.html" ]; then
     printf "Adding index.html to gh-pages branch...\n"
-    cp .gh-pages/index.html .
+    curl -s https://raw.githubusercontent.com/israellopezdeveloper/scaffold/refs/heads/main/.gh-pages/index.html >.gh-pages/index.html
     git add index.html
   else
     echo "Error: No index.html found in .gh-pages directory" >&2
