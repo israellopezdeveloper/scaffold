@@ -78,9 +78,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                 AC_MSG_ERROR([libtsan not found])
             fi
             AC_MSG_NOTICE([Compilando con detección de errores de hilos (ThreadSanitizer)])
-            CFLAGS="-O1 -g -fsanitize=thread $CFLAGS_COMMON"
-            CXXFLAGS="-O1 -g -fsanitize=thread $CXXFLAGS_COMMON"
-            LDFLAGS="-fsanitize=thread $LDFLAGS_COMMON"
+            CFLAGS="-g -fsanitize=thread -fPIE"
+            CXXFLAGS="-g -fsanitize=thread -fPIE"
+            LDFLAGS="-g -fsanitize=thread -fPIE -pie"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [true])
