@@ -73,14 +73,14 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AC_MSG_CHECKING([for libtsan])
             AC_CHECK_LIB([tsan], [__tsan_init], [has_libtsan=yes], [has_libtsan=no])
             if test "$has_libtsan" = "yes"; then
-                LIBS="$LIBS -ltsan"
+                LIBS="$LIBS"
             else
                 AC_MSG_ERROR([libtsan not found])
             fi
             AC_MSG_NOTICE([Compilando con detección de errores de hilos (ThreadSanitizer)])
-            CFLAGS="-g -fsanitize=thread -fPIE"
-            CXXFLAGS="-g -fsanitize=thread -fPIE"
-            LDFLAGS="-g -fsanitize=thread -fPIE -pie"
+            CFLAGS="-g -fsanitize=thread"
+            CXXFLAGS="-g -fsanitize=thread"
+            LDFLAGS="-g -fsanitize=thread"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [true])
