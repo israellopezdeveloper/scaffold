@@ -33,7 +33,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     AC_MSG_CHECKING([for libasan])
                     AC_CHECK_LIB([asan], [__asan_init], [has_libasan=yes], [has_libasan=no])
                     if test "$has_libasan" = "yes"; then
-                        LIBS="$LIBS -lasan"
+                        LIBS="$LIBS"
                     else
                         AC_MSG_ERROR([libasan not found])
                     fi
@@ -41,10 +41,10 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g -fsanitize=address -fno-omit-frame-pointer $CFLAGS_COMMON"
-                    CXXFLAGS="-O0 -g -fsanitize=address -fno-omit-frame-pointer $CXXFLAGS_COMMON"
-                    LDFLAGS="-O0 -g -fsanitize=address -fno-omit-frame-pointer $LDFLAGS_COMMON"
-                    MEMORY_LEAK_DIAGNOSTIC="valgrind --leak-check=full --show-leak-kinds=all -s"
+                    CFLAGS="-O0 -g"
+                    CXXFLAGS="-O0 -g"
+                    LDFLAGS="-O0 -g"
+                    MEMORY_LEAK_DIAGNOSTIC="valgrind --leak-check=full --show-leak-kinds=all -s "
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
                     ;;
@@ -53,9 +53,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g -fsanitize=address -static-libasan"
-                    CXXFLAGS="-O0 -g -fsanitize=address -static-libasan"
-                    LDFLAGS="-O0 -g -fsanitize=address -static-libasan -rtlib=compiler-rt"
+                    CFLAGS="-O0 -g -fsanitize=address"
+                    CXXFLAGS="-O0 -g -fsanitize=address"
+                    LDFLAGS="-O0 -g -fsanitize=address"
                     MEMORY_LEAK_DIAGNOSTIC="ASAN_OPTIONS=detect_leaks=1 "
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
