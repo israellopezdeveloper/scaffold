@@ -19,6 +19,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             ;;
         debug)
             AC_MSG_NOTICE([Compilando en modo depuración])
+            AC_DEFINE([DEBUG], [3], [@brief Enables debug messages])
             CFLAGS="-Og -g3 $CFLAGS_COMMON"
             CXXFLAGS="-Og -g3 $CXXFLAGS_COMMON"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
