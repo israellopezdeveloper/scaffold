@@ -1,15 +1,15 @@
-dnl Macro para configurar los flags
+dnl Macro to configure the flags
 AC_DEFUN([CONFIGURE_FLAGS], [
     CFLAGS_COMMON="-Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE"
     CXXFLAGS_COMMON="$CFLAGS_COMMON"
     LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now -pie"
 
-    # Establece directorios de inclusión
+    # Set include directories
     CPPFLAGS="$CPPFLAGS -I${srcdir}/include"
 
     case "$build_mode" in
         production)
-            AC_MSG_NOTICE([Compilando en modo producción])
+            AC_MSG_NOTICE([Compiling in production mode])
             CFLAGS="-O3 -fPIE -march=native $CFLAGS_COMMON"
             CXXFLAGS="-O3 -fPIE -march=native $CXXFLAGS_COMMON"
             LDFLAGS="-pie $LDFLAGS_COMMON"
@@ -18,16 +18,42 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
             ;;
         debug)
-            AC_MSG_NOTICE([Compilando en modo depuración])
+            AC_MSG_NOTICE([Compiling in debug mode])
             CFLAGS="-Og -g3 $CFLAGS_COMMON"
             CXXFLAGS="-Og -g3 $CXXFLAGS_COMMON"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
+            AC_ARG_WITH([logger-mode],
+                AS_HELP_STRING([--with-logger-mode=MODE],
+                              [Select the logger mode (options: disable, critical, warn, debug)]),
+                [logger_mode=$withval],
+                [logger_mode=debug])  # Default value
+            # Assign DEBUG value based on the selected mode
+            case "$logger_mode" in
+                disable)
+                    debug_value=0
+                    ;;
+                critical)
+                    debug_value=1
+                    ;;
+                warn)
+                    debug_value=2
+                    ;;
+                debug)
+                    debug_value=3
+                    ;;
+                *)
+                    AC_MSG_ERROR([Invalid logger mode: $logger_mode])
+                    ;;
+            esac
+
+            # Define the DEBUG macro with the corresponding value
+            AC_DEFINE_UNQUOTED([DEBUG], [$debug_value], [Logger debug level])
             ;;
         memleak)
-            # Verificar si libasan está disponible
-            AC_MSG_NOTICE([Compilando con detección de fugas de memoria (AddressSanitizer)])
+            # Check if libasan is available
+            AC_MSG_NOTICE([Compiling with memory leak detection (AddressSanitizer)])
             case "$COMPILER" in
                 GCC)
                     AC_MSG_CHECKING([for libasan])
@@ -69,7 +95,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
             ;;
         thread-sanitize)
-            # Verificar si libtsan está disponible
+            # Check if libtsan is available
             AC_MSG_CHECKING([for libtsan])
             AC_CHECK_LIB([tsan], [__tsan_init], [has_libtsan=yes], [has_libtsan=no])
             if test "$has_libtsan" = "yes"; then
@@ -77,7 +103,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             else
                 AC_MSG_ERROR([libtsan not found])
             fi
-            AC_MSG_NOTICE([Compilando con detección de errores de hilos (ThreadSanitizer)])
+            AC_MSG_NOTICE([Compiling with thread error detection (ThreadSanitizer)])
             CFLAGS="-O1 -g -fsanitize=thread $CFLAGS_COMMON"
             CXXFLAGS="-O1 -g -fsanitize=thread $CXXFLAGS_COMMON"
             LDFLAGS="-fsanitize=thread $LDFLAGS_COMMON"
@@ -150,7 +176,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
             ;;
         *)
-            AC_MSG_ERROR([Modo de compilación inválido: $build_mode])
+            AC_MSG_ERROR([Invalid build mode: $build_mode])
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])

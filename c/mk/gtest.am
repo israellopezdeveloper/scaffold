@@ -13,5 +13,5 @@ $(GTEST_LIBS): | $(GTEST_DIR)
     cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && make
 
 $(GTEST_DIR):
-	@echo "Clonando GoogleTest...";
+	@echo "Cloning GoogleTest...";
 	@git clone https://github.com/google/googletest.git $(GTEST_DIR)

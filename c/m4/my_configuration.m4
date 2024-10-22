@@ -76,11 +76,13 @@ AC_DEFUN([MY_CONFIGURATION], [
   SUMMARY
 
   AH_TOP([
-  #include <unistd.h>
-  
-  #define ERROR_CODE 0
-  
-  #define SUCCESS_CODE 1
+#include <unistd.h>
+
+/*! @brief Operation goes wrong */
+#define ERROR_CODE 0
+
+/*! @brief Operation goes well */
+#define SUCCESS_CODE 1
   ])
   AC_CONFIG_HEADERS([include/config.h])
   AC_CONFIG_FILES([Makefile])
