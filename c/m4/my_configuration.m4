@@ -83,6 +83,9 @@ AC_DEFUN([MY_CONFIGURATION], [
 
 /*! @brief Operation goes well */
 #define SUCCESS_CODE 1
+
+/*! @brief Operation goes really bad */
+#define CRITICAL_CODE 2
   ])
   AC_CONFIG_HEADERS([include/config.h])
   AC_CONFIG_FILES([Makefile])

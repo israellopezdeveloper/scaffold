@@ -48,7 +48,6 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     ;;
             esac
 
-            AH_TOP([#include <nanologger/logger.h>])
             # Define the DEBUG macro with the corresponding value
             AC_DEFINE_UNQUOTED([DEBUG], [$debug_value], [Logger debug level])
             ;;
