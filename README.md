@@ -32,6 +32,9 @@ Follow the steps below to create a new repository with this tool:
 
 Both languages follow the GNU industry standards.
 
+- Docker
+- Python
+
 ## Future Improvements
 
 - Support for additional programming languages.
