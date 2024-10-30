@@ -78,11 +78,14 @@ AC_DEFUN([MY_CONFIGURATION], [
   AH_TOP([
 #include <unistd.h>
 
-/*! @brief Bad result of operation */
+/*! @brief Operation goes wrong */
 #define ERROR_CODE 0
 
-/*! @brief Good result of operation */
+/*! @brief Operation goes well */
 #define SUCCESS_CODE 1
+
+/*! @brief Operation goes really bad */
+#define CRITICAL_CODE 2
   ])
   AC_CONFIG_HEADERS([include/config.h])
   AC_CONFIG_FILES([Makefile])

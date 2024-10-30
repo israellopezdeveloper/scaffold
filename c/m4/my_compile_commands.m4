@@ -1,6 +1,5 @@
 AC_DEFUN([COMPILE_COMMANDS], [
     AC_MSG_CHECKING([for required software to generate compile_commands.json])
-    # Añadir la opción --enable-compile-commands
     AC_ARG_ENABLE([compile-commands],
         [AS_HELP_STRING([--enable-compile-commands], [Generate compile_commands.json using Bear])],
         [enable_compile_commands=$enableval], [enable_compile_commands=no])

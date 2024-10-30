@@ -1,7 +1,7 @@
 if ENABLE_CODE_COVERAGE
 COVERAGE_OUTPUT = coverage
 
-# Reglas para generar cobertura de código con GCC
+# Rule to generate code coverage with GCC
 coverage-GCC:
 	@$(MAKE) clean
 	@$(MAKE) check
@@ -24,7 +24,7 @@ coverage-GCC:
 		--fail-under-branch 70 \
 	src > /dev/null
 
-# Reglas para generar cobertura de código con Clang
+# Rule to generate code coverage with Clang
 coverage-Clang:
 	@$(MAKE) clean
 	@$(MAKE) check > /dev/null 2>&1

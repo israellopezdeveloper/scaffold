@@ -1,7 +1,6 @@
 AC_DEFUN([SUMMARY], [
     AC_MSG_NOTICE([])
 
-    # Usar m4_expand para generar el texto del resumen con las variables de m4
     m4_expand([
     summary_text="Project:[$PACKAGE_NAME]
 Version:[$VERSION]
@@ -24,11 +23,9 @@ LDFLAGS:[$LDFLAGS]"
         field1 = [$]1;
         field2 = [$]2;
 
-        # Elimina espacios en blanco al inicio y final
         gsub(/^[ \t]+|[ \t]+$/, "", field1);
         gsub(/^[ \t]+|[ \t]+$/, "", field2);
 
-        # Ajustar la longitud del campo 2 si excede max_width
         if (length(field2) > max_width - 45) {
             printf("%-20s : ", field1);
             while (length(field2) > 0) {
@@ -41,14 +38,13 @@ LDFLAGS:[$LDFLAGS]"
                 printf("%s\n", substr(field2, 1, split_point));
                 field2 = substr(field2, split_point + 1);
                 if (length(field2) > 0) {
-                    printf("%-20s   ", "");  # Espacios para la nueva línea
+                    printf("%-20s   ", "");
                 }
             }
         } else {
             printf("%-20s : %s\n", field1, field2);
         }
         
-        # Imprimir línea separadora simple entre campos
         dash_line_simple = "";
         for (i = 1; i <= max_width; i++) {
             dash_line_simple = dash_line_simple "-";
