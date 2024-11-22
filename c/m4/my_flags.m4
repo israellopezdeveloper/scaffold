@@ -1,8 +1,14 @@
 dnl Macro to configure the flags
 AC_DEFUN([CONFIGURE_FLAGS], [
-    CFLAGS_COMMON="-Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE"
+    PKG_PROG_PKG_CONFIG
+    PKG_CHECK_MODULES([NANOLOGGER], [nanologger],
+                  [],
+                  [AC_MSG_ERROR([Nanologger library not found. Please install the nanologger library.])])
+    CFLAGS="$NANOLOGGER_CFLAGS"
+    LIBS="$LIBS $NANOLOGGER_LIBS"
+    CFLAGS_COMMON="-Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE $CFLAGS"
     CXXFLAGS_COMMON="$CFLAGS_COMMON"
-    LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now -pie"
+    LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now -pie $LIBS -lpthread"
 
     # Set include directories
     CPPFLAGS="$CPPFLAGS -I${srcdir}/include"
@@ -22,6 +28,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AC_DEFINE([DEBUG], [3], [@brief Enables debug messages])
             CFLAGS="-Og -g3 $CFLAGS_COMMON"
             CXXFLAGS="-Og -g3 $CXXFLAGS_COMMON"
+            LDFLAGS="-Og -g3 $LDFLAGS_COMMON"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
@@ -183,5 +190,6 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
             ;;
     esac
+    AH_BOTTOM([#include <nanologger.h>])
 ])
 
