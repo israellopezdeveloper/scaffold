@@ -16,8 +16,8 @@ AC_DEFUN([CONFIGURE_FLAGS], [
     case "$build_mode" in
         production)
             AC_MSG_NOTICE([Compiling in production mode])
-            CFLAGS="-O3 -fPIE -march=native $CFLAGS"
-            CXXFLAGS="-O3 -fPIE -march=native $CXXFLAGS"
+            CFLAGS="-O3 -fPIE -march=native -ftree-vectorize -mavx2 -mfma -flto -fwhole-program -ffunction-sections -fdata-sections -Wl,--gc-sections $CFLAGS"
+            CXXFLAGS="-O3 -fPIE -march=native -ftree-vectorize -mavx2 -mfma -flto -fwhole-program -ffunction-sections -fdata-sections -Wl,--gc-sections $CXXFLAGS"
             LDFLAGS="-pie $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
