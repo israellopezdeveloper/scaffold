@@ -4,11 +4,11 @@ AC_DEFUN([CONFIGURE_FLAGS], [
     PKG_CHECK_MODULES([NANOLOGGER], [nanologger],
                   [],
                   [AC_MSG_ERROR([Nanologger library not found. Please install the nanologger library.])])
-    CFLAGS="$NANOLOGGER_CFLAGS"
+    CFLAGS_COMMON="-pedantic -Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE $NANOLOGGER_CFLAGS"
     LIBS="$LIBS $NANOLOGGER_LIBS"
-    CFLAGS_COMMON="-Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE $CFLAGS"
-    CXXFLAGS_COMMON="$CFLAGS_COMMON"
-    LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now -pie $LIBS -lpthread"
+    CFLAGS="-std=c23 $CFLAGS_COMMON"
+    CXXFLAGS="-std=c++23 $CFLAGS_COMMON"
+    LDFLAGS="-Wl,-z,relro -Wl,-z,now -pie $LIBS -lpthread"
 
     # Set include directories
     CPPFLAGS="$CPPFLAGS -I${srcdir}/include"
@@ -16,9 +16,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
     case "$build_mode" in
         production)
             AC_MSG_NOTICE([Compiling in production mode])
-            CFLAGS="-O3 -fPIE -march=native $CFLAGS_COMMON"
-            CXXFLAGS="-O3 -fPIE -march=native $CXXFLAGS_COMMON"
-            LDFLAGS="-pie $LDFLAGS_COMMON"
+            CFLAGS="-O3 -fPIE -march=native $CFLAGS"
+            CXXFLAGS="-O3 -fPIE -march=native $CXXFLAGS"
+            LDFLAGS="-pie $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
@@ -26,9 +26,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
         debug)
             AC_MSG_NOTICE([Compiling in debug mode])
             AC_DEFINE([DEBUG], [3], [@brief Enables debug messages])
-            CFLAGS="-Og -g3 $CFLAGS_COMMON"
-            CXXFLAGS="-Og -g3 $CXXFLAGS_COMMON"
-            LDFLAGS="-Og -g3 $LDFLAGS_COMMON"
+            CFLAGS="-Og -g3 $CFLAGS"
+            CXXFLAGS="-Og -g3 $CXXFLAGS"
+            LDFLAGS="-Og -g3 $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
@@ -147,9 +147,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                         AC_MSG_NOTICE([gcovr found, coverage reports enabled])
                     fi
                     AC_MSG_NOTICE([Enabling code coverage for GCC])
-                    CFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CFLAGS_COMMON"
-                    CXXFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CXXFLAGS_COMMON"
-                    LDFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $LDFLAGS_COMMON"
+                    CFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CFLAGS"
+                    CXXFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CXXFLAGS"
+                    LDFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $LDFLAGS"
                     AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [true])
                     ;;
                 Clang)
@@ -170,9 +170,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                         AC_MSG_ERROR([jq is required to generate coverage report but not found])
                     fi
                     AC_MSG_NOTICE([Enabling code coverage for Clang])
-                    CFLAGS="$CFLAGS -fprofile-instr-generate -fcoverage-mapping $CFLAGS_COMMON"
-                    CXXFLAGS="$CXXFLAGS -fprofile-instr-generate -fcoverage-mapping $CXXFLAGS_COMMON"
-                    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping $LDFLAGS_COMMON"
+                    CFLAGS="$CFLAGS -fprofile-instr-generate -fcoverage-mapping $CFLAGS"
+                    CXXFLAGS="$CXXFLAGS -fprofile-instr-generate -fcoverage-mapping $CXXFLAGS"
+                    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping $LDFLAGS"
                     AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [true])
                     ;;
                 *)
