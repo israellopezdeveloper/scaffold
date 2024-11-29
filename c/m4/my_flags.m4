@@ -75,9 +75,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g"
-                    CXXFLAGS="-O0 -g"
-                    LDFLAGS="-O0 -g"
+                    CFLAGS="-O0 -g $CFLAGS"
+                    CXXFLAGS="-O0 -g $CXXFLAGS"
+                    LDFLAGS="-O0 -g $LDFLAGS"
                     MEMORY_LEAK_DIAGNOSTIC="valgrind --leak-check=full --show-leak-kinds=all -s "
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
@@ -87,9 +87,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g -fsanitize=address"
-                    CXXFLAGS="-O0 -g -fsanitize=address"
-                    LDFLAGS="-O0 -g -fsanitize=address"
+                    CFLAGS="-O0 -g -fsanitize=address $CFLAGS"
+                    CXXFLAGS="-O0 -g -fsanitize=address $CXXFLAGS"
+                    LDFLAGS="-O0 -g -fsanitize=address $LDFLAGS"
                     MEMORY_LEAK_DIAGNOSTIC="ASAN_OPTIONS=detect_leaks=1 "
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
@@ -112,9 +112,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                 AC_MSG_ERROR([libtsan not found])
             fi
             AC_MSG_NOTICE([Compiling with thread error detection (ThreadSanitizer)])
-            CFLAGS="-g -fsanitize=thread"
-            CXXFLAGS="-g -fsanitize=thread"
-            LDFLAGS="-g -fsanitize=thread"
+            CFLAGS="-g -fsanitize=thread $CFLAGS"
+            CXXFLAGS="-g -fsanitize=thread $CXXFLAGS"
+            LDFLAGS="-g -fsanitize=thread $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [true])
