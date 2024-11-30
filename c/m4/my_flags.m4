@@ -1,8 +1,14 @@
 dnl Macro to configure the flags
 AC_DEFUN([CONFIGURE_FLAGS], [
-    CFLAGS_COMMON="-Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE"
-    CXXFLAGS_COMMON="$CFLAGS_COMMON"
-    LDFLAGS_COMMON="-Wl,-z,relro -Wl,-z,now -pie"
+    PKG_PROG_PKG_CONFIG
+    PKG_CHECK_MODULES([NANOLOGGER], [nanologger],
+                  [],
+                  [AC_MSG_ERROR([Nanologger library not found. Please install the nanologger library.])])
+    CFLAGS_COMMON="-pedantic -Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE $NANOLOGGER_CFLAGS"
+    LIBS="$LIBS $NANOLOGGER_LIBS"
+    CFLAGS="-std=c23 $CFLAGS_COMMON"
+    CXXFLAGS="-std=c++23 $CFLAGS_COMMON"
+    LDFLAGS="-Wl,-z,relro -Wl,-z,now -pie $LIBS -lpthread"
 
     # Set include directories
     CPPFLAGS="$CPPFLAGS -I${srcdir}/include"
@@ -10,17 +16,19 @@ AC_DEFUN([CONFIGURE_FLAGS], [
     case "$build_mode" in
         production)
             AC_MSG_NOTICE([Compiling in production mode])
-            CFLAGS="-O3 -fPIE -march=native $CFLAGS_COMMON"
-            CXXFLAGS="-O3 -fPIE -march=native $CXXFLAGS_COMMON"
-            LDFLAGS="-pie $LDFLAGS_COMMON"
+            CFLAGS="-O3 -fPIE -march=native -ftree-vectorize -mavx2 -mfma -flto=$(nproc) -fwhole-program -ffunction-sections -fdata-sections -Wl,--gc-sections $CFLAGS"
+            CXXFLAGS="-O3 -fPIE -march=native -ftree-vectorize -mavx2 -mfma -flto=$(nproc) -fwhole-program -ffunction-sections -fdata-sections -Wl,--gc-sections $CXXFLAGS"
+            LDFLAGS="-pie $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
             ;;
         debug)
             AC_MSG_NOTICE([Compiling in debug mode])
-            CFLAGS="-Og -g3 $CFLAGS_COMMON"
-            CXXFLAGS="-Og -g3 $CXXFLAGS_COMMON"
+            AC_DEFINE([DEBUG], [3], [@brief Enables debug messages])
+            CFLAGS="-Og -g3 $CFLAGS"
+            CXXFLAGS="-Og -g3 $CXXFLAGS"
+            LDFLAGS="-Og -g3 $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
@@ -59,7 +67,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     AC_MSG_CHECKING([for libasan])
                     AC_CHECK_LIB([asan], [__asan_init], [has_libasan=yes], [has_libasan=no])
                     if test "$has_libasan" = "yes"; then
-                        LIBS="$LIBS -lasan"
+                        LIBS="$LIBS"
                     else
                         AC_MSG_ERROR([libasan not found])
                     fi
@@ -67,10 +75,10 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g -fsanitize=address -fno-omit-frame-pointer $CFLAGS_COMMON"
-                    CXXFLAGS="-O0 -g -fsanitize=address -fno-omit-frame-pointer $CXXFLAGS_COMMON"
-                    LDFLAGS="-O0 -g -fsanitize=address -fno-omit-frame-pointer $LDFLAGS_COMMON"
-                    MEMORY_LEAK_DIAGNOSTIC="valgrind --leak-check=full --show-leak-kinds=all -s"
+                    CFLAGS="-O0 -g $CFLAGS"
+                    CXXFLAGS="-O0 -g $CXXFLAGS"
+                    LDFLAGS="-O0 -g $LDFLAGS"
+                    MEMORY_LEAK_DIAGNOSTIC="valgrind --leak-check=full --show-leak-kinds=all -s "
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
                     ;;
@@ -79,9 +87,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     if test "$VALGRIND" = "no"; then
                         AC_MSG_ERROR([valgrind not found - not able to check memory leaks])
                     fi
-                    CFLAGS="-O0 -g -fsanitize=address -static-libasan"
-                    CXXFLAGS="-O0 -g -fsanitize=address -static-libasan"
-                    LDFLAGS="-O0 -g -fsanitize=address -static-libasan -rtlib=compiler-rt"
+                    CFLAGS="-O0 -g -fsanitize=address $CFLAGS"
+                    CXXFLAGS="-O0 -g -fsanitize=address $CXXFLAGS"
+                    LDFLAGS="-O0 -g -fsanitize=address $LDFLAGS"
                     MEMORY_LEAK_DIAGNOSTIC="ASAN_OPTIONS=detect_leaks=1 "
                     AC_SUBST([MEMORY_LEAK_DIAGNOSTIC])
                     AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [true])
@@ -99,14 +107,14 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AC_MSG_CHECKING([for libtsan])
             AC_CHECK_LIB([tsan], [__tsan_init], [has_libtsan=yes], [has_libtsan=no])
             if test "$has_libtsan" = "yes"; then
-                LIBS="$LIBS -ltsan"
+                LIBS="$LIBS"
             else
                 AC_MSG_ERROR([libtsan not found])
             fi
             AC_MSG_NOTICE([Compiling with thread error detection (ThreadSanitizer)])
-            CFLAGS="-O1 -g -fsanitize=thread $CFLAGS_COMMON"
-            CXXFLAGS="-O1 -g -fsanitize=thread $CXXFLAGS_COMMON"
-            LDFLAGS="-fsanitize=thread $LDFLAGS_COMMON"
+            CFLAGS="-g -fsanitize=thread $CFLAGS"
+            CXXFLAGS="-g -fsanitize=thread $CXXFLAGS"
+            LDFLAGS="-g -fsanitize=thread $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [true])
@@ -139,9 +147,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                         AC_MSG_NOTICE([gcovr found, coverage reports enabled])
                     fi
                     AC_MSG_NOTICE([Enabling code coverage for GCC])
-                    CFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CFLAGS_COMMON"
-                    CXXFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CXXFLAGS_COMMON"
-                    LDFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $LDFLAGS_COMMON"
+                    CFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CFLAGS"
+                    CXXFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $CXXFLAGS"
+                    LDFLAGS="-fprofile-arcs -fprofile-update=atomic -ftest-coverage $LDFLAGS"
                     AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [true])
                     ;;
                 Clang)
@@ -162,9 +170,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                         AC_MSG_ERROR([jq is required to generate coverage report but not found])
                     fi
                     AC_MSG_NOTICE([Enabling code coverage for Clang])
-                    CFLAGS="$CFLAGS -fprofile-instr-generate -fcoverage-mapping $CFLAGS_COMMON"
-                    CXXFLAGS="$CXXFLAGS -fprofile-instr-generate -fcoverage-mapping $CXXFLAGS_COMMON"
-                    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping $LDFLAGS_COMMON"
+                    CFLAGS="$CFLAGS -fprofile-instr-generate -fcoverage-mapping $CFLAGS"
+                    CXXFLAGS="$CXXFLAGS -fprofile-instr-generate -fcoverage-mapping $CXXFLAGS"
+                    LDFLAGS="-fprofile-instr-generate -fcoverage-mapping $LDFLAGS"
                     AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [true])
                     ;;
                 *)
@@ -182,5 +190,6 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
             ;;
     esac
+    AH_BOTTOM([#include <nanologger.h>])
 ])
 
