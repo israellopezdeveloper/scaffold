@@ -11,12 +11,17 @@ AC_DEFUN([DETECT_COMPILER], [
     # Initially assume it is unknown
     COMPILER="Unknown"
 
+    CFLAGS=""
+    CXXFLAGS=""
+    LDFLAGS=""
     # Detect if it is GCC
     if $CC --version 2>/dev/null | grep -q 'gcc'; then
         COMPILER="GCC"
     # Detect if it is Clang
     elif $CC --version 2>/dev/null | grep -q 'clang'; then
         COMPILER="Clang"
+        CXXFLAGS="-stdlib=libstdc++"
+        LDFLAGS="-lc++ -lc++abi"
     # Detect if it is MinGW
     elif $CC --version 2>/dev/null | grep -q 'mingw'; then
         COMPILER="MingW"

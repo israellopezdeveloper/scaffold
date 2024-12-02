@@ -6,9 +6,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                   [AC_MSG_ERROR([Nanologger library not found. Please install the nanologger library.])])
     CFLAGS_COMMON="-pedantic -Wall -Wextra -Werror -Wreturn-local-addr -fstack-protector-strong -Wshadow -Wformat=2 -fstack-clash-protection -fPIE $NANOLOGGER_CFLAGS"
     LIBS="$LIBS $NANOLOGGER_LIBS"
-    CFLAGS="-std=c23 $CFLAGS_COMMON"
-    CXXFLAGS="-std=c++23 $CFLAGS_COMMON"
-    LDFLAGS="-Wl,-z,relro -Wl,-z,now -pie $LIBS -lpthread"
+    CFLAGS="-std=c23 $CFLAGS $CFLAGS_COMMON"
+    CXXFLAGS="-std=c++23 $CXXFLAGS $CFLAGS_COMMON"
+    LDFLAGS="$LDFLAGS -Wl,-z,relro -Wl,-z,now -pie $LIBS -lpthread"
 
     # Set include directories
     CPPFLAGS="$CPPFLAGS -I${srcdir}/include"
@@ -18,16 +18,15 @@ AC_DEFUN([CONFIGURE_FLAGS], [
             AC_MSG_NOTICE([Compiling in production mode])
             CFLAGS="-O3 -fPIE -march=native -ftree-vectorize -mavx2 -mfma -ffunction-sections -fdata-sections $CFLAGS"
             CXXFLAGS="-O3 -fPIE -march=native -ftree-vectorize -mavx2 -mfma -ffunction-sections -fdata-sections $CXXFLAGS"
-            LDFLAGS="-pie $LDFLAGS"
+            LDFLAGS="$LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [false])
             ;;
         debug)
             AC_MSG_NOTICE([Compiling in debug mode])
-            AC_DEFINE([DEBUG], [3], [@brief Enables debug messages])
-            CFLAGS="-Og -g3 $CFLAGS"
-            CXXFLAGS="-Og -g3 $CXXFLAGS"
+            CFLAGS="-Og -g3 -fPIE -march=native $CFLAGS"
+            CXXFLAGS="-Og -g3 -fPIE -march=native $CXXFLAGS"
             LDFLAGS="-Og -g3 $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
