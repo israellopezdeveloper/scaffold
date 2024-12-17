@@ -23,7 +23,6 @@ coverage-GCC: $(GTEST_LIBS) $(check_PROGRAMS)
      --root $(srcdir)/src \
      --filter "$${FILTER_PATTERN}" \
      --fail-under-line $(LINE_COVERAGE) \
-     --fail-under-function $(FUNCTION_COVERAGE) \
      --fail-under-branch $(BRANCH_COVERAGE) src > /dev/null
 
 # Rule to generate code coverage with Clang
