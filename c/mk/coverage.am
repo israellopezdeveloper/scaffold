@@ -16,7 +16,7 @@ coverage-GCC: $(GTEST_LIBS) $(check_PROGRAMS)
     --root $(srcdir)/src \
     --filter "$${FILTER_PATTERN}" \
     -o coverage/json/coverage.json src > /dev/null 2>&1
-  @echo "==>==>==>$(LINE_COVERAGE) - $(FUNCTION_COVERAGE) - $(BRANCH_COVERAGE)"
+	@echo "==>==>==>$(LINE_COVERAGE) - $(FUNCTION_COVERAGE) - $(BRANCH_COVERAGE)"
 	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
    $(GCOVR) --json-summary \
     --gcov-ignore-parse-errors \
