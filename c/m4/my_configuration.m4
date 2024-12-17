@@ -53,6 +53,17 @@ dnl Available modes: production (default), debug, memleak, thread-sanitize, cove
 dnl ================================
 
 dnl ================================
+dnl Macro CONFIGURE_COVERAGE
+dnl -------------------------------
+dnl Configure coverage limits (line, functions and branch). Defines the coverage limits
+dnl through the --line-coverage, --function-coverage and --branch-coverage options.
+dnl The values must be an integer [0,100]. The defaults are:
+dnl  - line: 80%
+dnl  - function: 80%
+dnl  - branch: 60%
+dnl ================================
+
+dnl ================================
 dnl Macro COMPILE_COMMANDS
 dnl -------------------------------
 dnl Checks if Bear is available to generate the compile_commands.json file,
@@ -72,6 +83,8 @@ AC_DEFUN([MY_CONFIGURATION], [
   CONFIGURE_DOXYGEN
 
   COMPILE_COMMANDS
+
+  CONFIGURE_COVERAGE
 
   SUMMARY
 

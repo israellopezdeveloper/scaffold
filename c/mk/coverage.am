@@ -2,30 +2,32 @@ if ENABLE_CODE_COVERAGE
 COVERAGE_OUTPUT = coverage
 
 # Rule to generate code coverage with GCC
-coverage-GCC:
+coverage-GCC: $(check_PROGRAMS)
 	@$(MAKE) clean
 	@$(MAKE) check
 	@$(GCOV) -o src $(srcdir)/src/*.c
 	@mkdir -p coverage/{html,json}
-	@$(LCOV) --capture --directory src --output-file coverage/coverage.info
-	@$(LCOV) --extract coverage/coverage.info "*/src/*" --output-file coverage/filtered_coverage.info
-	@$(GENHTML) coverage/filtered_coverage.info --output-directory coverage/html
+	@$(LCOV) --capture --directory src --output-file coverage/coverage.info > /dev/null 2>&1
+	@$(LCOV) --extract coverage/coverage.info "*/src/*" --output-file coverage/filtered_coverage.info > /dev/null 2>&1
+	@$(GENHTML) coverage/filtered_coverage.info --output-directory coverage/html > /dev/null 2>&1
 	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
    $(GCOVR) --json-summary \
     --gcov-ignore-parse-errors \
     --root $(srcdir)/src \
     --filter "$${FILTER_PATTERN}" \
-    -o coverage/json/coverage.json src 2> /dev/null
+    -o coverage/json/coverage.json src > /dev/null 2>&1
 	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
-   $(GCOVR) --json-summary --root $(srcdir)/src \
+   $(GCOVR) --json-summary \
     --gcov-ignore-parse-errors \
+    --root $(srcdir)/src \
     --filter "$${FILTER_PATTERN}" \
-		--fail-under-line 70 \
-		--fail-under-branch 70 \
+		--fail-under-line $(LINE_COVERAGE) \
+		--fail-under-function $(FUNCTION_COVERAGE) \
+		--fail-under-branch $(BRANCH_COVERAGE) \
 	src > /dev/null
 
 # Rule to generate code coverage with Clang
-coverage-Clang:
+coverage-Clang: $(check_PROGRAMS)
 	@$(MAKE) clean
 	@$(MAKE) check > /dev/null 2>&1
 	@$(LLVM_PROFDATA) merge -sparse default.profraw -o default.profdata

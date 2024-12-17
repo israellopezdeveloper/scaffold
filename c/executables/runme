@@ -1,0 +1,321 @@
+#!/bin/sh
+###############################################################################
+# Autotools Project Configuration and Execution Script
+#
+# Description:
+#   This script automates the configuration and execution of various actions
+#   for an Autotools-based project. It supports multiple build modes and actions,
+#   such as cleaning the build directory, generating documentation, running
+#   memory leak checks, thread sanitization, coverage checks, and packaging tasks.
+#
+# Functionality:
+#   - Processes options using `getopt` to accept the following arguments:
+#     - `--mode` (-m): Specifies the build mode (production, debug, memleak, etc.).
+#     - `--actions` (-a): Comma-separated list of actions to execute.
+#     - `--loop` (-l): Runs actions in a loop until stopped by the user.
+#     - `--disable-timeout` (-t): Disables timeouts for make execution.
+#     - `--stoppable` (-s): Pauses after each action until the user presses Enter.
+#     - `--help` (-h): Displays usage information.
+#
+#   Actions include:
+#     - check: Run tests
+#     - compile_commands: Generate compile_commands.json
+#     - docs: Generate documentation
+#     - memleak: Run memory leak checks
+#     - thread: Run thread sanitizer checks
+#     - clean: Clean build artifacts
+#     - iwyu: Run Include What You Use tool
+#     - arch_package, deb_package, rpm_package: Package generation (TODO)
+#
+# Usage Example:
+#   ./script.sh --mode debug --actions "docs,memleak" --stoppable
+#
+# Author: Israel
+# Creation Date: December 15, 2024
+# License: MIT
+#
+# Suggestions for Improvement:
+#   1. Implement package generation for Arch, Debian, and RPM (currently TODO).
+###############################################################################
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+VALID_MODES="production memleak coverage debug thread"
+MODE=""
+VALID_ACTIONS="check compile_commands docs memleak coverage thread iwyu arch_package deb_package rpm_package clean"
+ACTIONS=""
+LOOP=false
+TIMEOUT=true
+STOPPABLE=false
+
+# Main function
+main() {
+  # Clear screen
+  cls() {
+    printf "\033c"
+  }
+
+  # Check if haystack(1) contains needle(2) -> 1 contains -> 0 no contains
+  contains() {
+    if [ -z "${2}" ]; then
+      return 1
+    fi
+
+    for item in ${1}; do
+      if [ "${2}" = "$item" ]; then
+        return 0
+      fi
+    done
+
+    return 1
+  }
+
+  # Process options
+  process_options() {
+    # Show help message
+    show_help() {
+      echo "Usage: $0 [options]"
+      echo "Options:"
+      echo "  -m, --mode <MODE>             Enable one of the following modes:"
+      echo "             production         (default) all performance improvements"
+      echo "             memleak            enable memory leak check"
+      echo "             coverage           enable coverage check"
+      echo "             debug              enable debug info"
+      echo "             thread             enable thread sanitizer"
+      echo " -a, --actions <ACTIONS>        A comma-separated listof actions"
+      echo "               check            run tests"
+      echo "               compile_commands generate compile-commands"
+      echo "               docs             generate documentation"
+      echo "               memleak          run memory leak check"
+      echo "               coverage         run coverage check"
+      echo "               thread           run thread sanitizer"
+      echo "               iwyu             run Include What You Use tool"
+      echo "               arch_package     creates Arch Linux Package (TODO)"
+      echo "               deb_package      creates Debian/Ubuntu Package (TODO)"
+      echo "               rpm_package      creates RPM Package (TODO)"
+      echo "               clean            Clean build directory before building and do not clean after"
+      echo "  -l, --loop                    Enable loop mode"
+      echo "  -t, --disable-timeout         Disable timeouts on rule execution"
+      echo "  -s, --stoppable               pause after every action"
+      echo "  -h, --help                    Show this help message"
+    }
+
+    # Add items(1) comma-separated contained in valid list(2) prints valid list space-separated
+    valid_list() {
+      list=$(printf "%s" "${1}" | sed 's/,[ ]*/ /g')
+      output=""
+      for item in ${list}; do
+        if contains "${VALID_ACTIONS}" "${item}"; then
+          output="${output} ${item}"
+        fi
+      done
+      echo "${output}" | awk '{$1=$1;print}'
+    }
+
+    OPTS=$(getopt --name "${0}" --options "m:a:ltsh" --longoptions "mode:,actions:,loop,disable-timeout,stoppable,help" -- "$@")
+    eval set -- "${OPTS}"
+    while true; do
+      case "$1" in
+      -m | --mode)
+        if ! contains "${VALID_MODES}" "${2}"; then
+          show_help
+          exit 1
+        fi
+        MODE="${2}"
+        shift 2
+        ;;
+      -a | --actions)
+        ACTIONS=$(valid_list "${2}" "${VALID_ACTIONS}")
+        shift 2
+        ;;
+      -l | --loop)
+        LOOP=true
+        shift
+        ;;
+      -t | --disable-timeout)
+        TIMEOUT=false
+        shift
+        ;;
+      -s | --stoppable)
+        STOPPABLE=true
+        shift
+        ;;
+      -h | --help)
+        shift
+        show_help
+        exit 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      *)
+        show_help
+        exit 1
+        ;;
+      esac
+    done
+  }
+
+  # Runs an iteration of actions
+  run_iteration() {
+    # Stops after step
+    wait_key() {
+      if [ "${STOPPABLE:-false}" = true ]; then
+        echo ""
+        echo "        ╭─────────────────────────╮"
+        echo "        │ Press Enter to continue │"
+        echo "        ╰─────────────────────────╯"
+        read -r _
+      fi
+    }
+
+    # Shows a banner
+    banner() {
+      title="$1"
+      titlelength=$(printf "%s" "${title}" | wc -m)
+      toptitle=$(printf '─%.0s' $(seq "${titlelength}"))
+      screensize="$(tput cols)"
+      paddingslength="$(((screensize - 4 - titlelength) / 2))"
+      paddings=$(printf '─%.0s' $(seq "${paddingslength}"))
+      paddingssp=$(printf ' %.0s' $(seq "${paddingslength}"))
+      echo ""
+      echo "${paddingssp}╭─${toptitle}─╮"
+      echo "${paddings}┤ ${title} ├${paddings}"
+      echo "${paddingssp}╰─${toptitle}─╯"
+    }
+
+    # Configure the project
+    run_configuration() {
+      configure() {
+        cd "${SCRIPT_DIR}" || return
+        params="$*"
+        banner "Configuring ... [${params}]"
+
+        aclocal
+        autoreconf --install
+
+        mkdir -p "${SCRIPT_DIR}/build"
+        cd "${SCRIPT_DIR}/build" || return
+        "${SCRIPT_DIR}/configure" ${params} &&
+          wait_key
+      }
+
+      CONFIGURE_OPTIONS=""
+      if [ "${MODE}" != "" ] && [ "${MODE}" != "production" ]; then
+        if [ "${MODE}" = "thread" ]; then
+          CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --enable-build-mode=thread-sanitize"
+        else
+          CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --enable-build-mode=${MODE}"
+        fi
+      fi
+
+      if contains "${ACTIONS}" "compile_commands"; then
+        CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --enable-compile-commands"
+      fi
+      if contains "${ACTIONS}" "docs"; then
+        CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} --enable-doxygen-doc"
+      fi
+      CONFIGURE_OPTIONS=$(echo "${CONFIGURE_OPTIONS}" | awk '{$1=$1;print}')
+      configure "${CONFIGURE_OPTIONS}"
+    }
+
+    # Runs selected actions
+    run_actions() {
+      make_exec() {
+        params="$*"
+        banner "MAKE ${params}"
+
+        make clean
+        if ${TIMEOUT}; then
+          max_attempts=3
+          attempt=0
+
+          while [ $attempt -lt $max_attempts ]; do
+            attempt=$((attempt + 1))
+
+            timeout "120s" make "${params}"
+            exit_status=$?
+
+            if [ $exit_status -eq 0 ]; then
+              break
+            fi
+
+            if [ $attempt = $max_attempts ]; then
+              return 1
+            fi
+            sleep "0.5s"
+          done
+        else
+          make "${params}"
+        fi
+        wait_key
+      }
+
+      make_iwyu() {
+        banner "MAKE IWYU"
+
+        make clean && make compile_commands &&
+          iwyu-tool -p .. | bat &&
+          wait_key
+      }
+
+      for action in ${ACTIONS}; do
+        case "${action}" in
+        "iwyu")
+          make_iwyu
+          ;;
+        "clean")
+          make_exec "maintainer-clean"
+          ;;
+        "docs")
+          make_exec "doxygen-doc"
+          ;;
+        "memleak")
+          make_exec "leak-check"
+          ;;
+        "thread")
+          make_exec "thread-check"
+          ;;
+        *)
+          make_exec "${action}"
+          ;;
+        esac
+      done
+    }
+
+    run_configuration
+    run_actions
+  }
+
+  # Creates a loop of actions
+  loop_execution() {
+    executed=0
+    while true; do
+      if [ "$executed" -eq 1 ]; then
+        echo ""
+        echo "        ╭─────────────────────╮"
+        echo "        │ Execute again [Y/n] │"
+        echo "        ╰─────────────────────╯"
+        read -r REPLAY
+        if [ "${REPLAY}" = "n" ]; then
+          echo ""
+          break
+        fi
+        cls
+      fi
+      executed=1
+      run_iteration
+    done
+  }
+
+  cls
+  process_options "${@}"
+  if [ ${LOOP} = true ]; then
+    loop_execution
+  else
+    run_iteration
+  fi
+}
+
+main "$@"

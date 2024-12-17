@@ -8,7 +8,10 @@ Compilation mode:[$build_mode]
 Compiler:[$COMPILER]
 CFLAGS:[$CFLAGS]
 CXXFLAGS:[$CXXFLAGS]
-LDFLAGS:[$LDFLAGS]"
+LDFLAGS:[$LDFLAGS]
+LINE COVERAGE:[$LINE_COVERAGE]%
+FUNCTION COVERAGE:[$FUNCTION_COVERAGE]%
+BRANCH COVERAGE:[$BRANCH_COVERAGE]%"
     
     echo "$summary_text" | awk -v max_width="80" '
     BEGIN {

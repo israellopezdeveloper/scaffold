@@ -1,27 +1,15 @@
 if ENABLE_THREAD_SANITIZER
-thread-check:
+thread-check: $(check_PROGRAMS)
 	@echo "Running thread sanitizer..."
-	@for f in $$(ls tests); do \
+	@for f in $$(ls tests/*_test); do \
     echo "" > output.log; \
-    if [ -x "tests/$$f" ]; then \
-      "tests/$$f" 2> output.log > /dev/null; \
+    if [ -x "$$f" ]; then \
+      "$$f" 2> output.log > /dev/null; \
       if grep -q "WARNING: ThreadSanitizer" output.log; then \
-        echo "Thread issues detected at bin/$$f"; \
+        echo "Thread issues detected at $$f"; \
         exit 1; \
       else \
-        echo "No thread issues detected at tests/$$f"; \
-      fi; \
-    fi; \
-  done; \
-  for f in $$(ls bin); do \
-    echo "" > output.log; \
-    if [ -x "bin/$$f" ]; then \
-      "bin/$$f" 2> output.log > /dev/null; \
-      if grep -q "WARNING: ThreadSanitizer" output.log; then \
-        echo "Thread issues detected at bin/$$f"; \
-        exit 1; \
-      else \
-        echo "No thread issues detected at bin/$$f"; \
+        echo "No thread issues detected at $$f"; \
       fi; \
     fi; \
   done

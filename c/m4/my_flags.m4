@@ -111,9 +111,9 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                 AC_MSG_ERROR([libtsan not found])
             fi
             AC_MSG_NOTICE([Compiling with thread error detection (ThreadSanitizer)])
-            CFLAGS="-g -fsanitize=thread $CFLAGS"
-            CXXFLAGS="-g -fsanitize=thread $CXXFLAGS"
-            LDFLAGS="-g -fsanitize=thread $LDFLAGS"
+            CFLAGS="-O0 -g -fsanitize=thread $CFLAGS"
+            CXXFLAGS="-O0 -g -fsanitize=thread $CXXFLAGS"
+            LDFLAGS="-O0 -g -fsanitize=thread $LDFLAGS"
             AM_CONDITIONAL([ENABLE_CODE_COVERAGE], [false])
             AM_CONDITIONAL([ENABLE_MEMORY_LEAK], [false])
             AM_CONDITIONAL([ENABLE_THREAD_SANITIZER], [true])
@@ -141,7 +141,7 @@ AC_DEFUN([CONFIGURE_FLAGS], [
                     fi
                     AC_PATH_PROG([GCOVR], [gcovr], [no])
                     if test "$GCOVR" = "no"; then
-                        AC_MSG_WARN([gcovr not found, code coverage reports will not be generated])
+                        AC_MSG_ERROR([gcovr not found, code coverage reports will not be generated])
                     else
                         AC_MSG_NOTICE([gcovr found, coverage reports enabled])
                     fi

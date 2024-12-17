@@ -1,25 +1,14 @@
 if ENABLE_MEMORY_LEAK
 
-leak-check:
+leak-check: $(check_PROGRAMS)
 	@echo "Running memory leak check with Valgrind..."
-	@for f in $$(ls tests); do \
-    if [ -x "tests/$$f" ]; then \
-      $(MEMORY_LEAK_DIAGNOSTIC) "tests/$$f" > output.log 2>&1; \
+	@for f in $$(ls tests/*_test); do \
+    if [ -f "$$f" ] && [ -x "$$f" ]; then \
+      $(MEMORY_LEAK_DIAGNOSTIC) "$$f" > output.log 2>&1; \
       if grep -q "no leaks are possible" output.log; then \
-        echo "No memory leaks detected at tests/$$f"; \
+        echo "No memory leaks detected at $$f"; \
       else \
-        echo "Memory leaks detected at bin/$$f"; \
-        exit 1; \
-      fi; \
-    fi; \
-  done; \
-  for f in $$(ls bin); do \
-    if [ -x "bin/$$f" ]; then \
-      $(MEMORY_LEAK_DIAGNOSTIC) "bin/$$f" > output.log 2>&1; \
-      if grep -q "no leaks are possible" output.log; then \
-        echo "No memory leaks detected at bin/$$f"; \
-      else \
-        echo "Memory leaks detected at bin/$$f"; \
+        echo "Memory leaks detected at $$f"; \
         exit 1; \
       fi; \
     fi; \
