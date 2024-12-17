@@ -39,7 +39,6 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-        recursive: true
     - name: Execute
       run: |
         ${{ inputs.commands }}
@@ -50,7 +49,7 @@ jobs:
         ./build/tests/saurion_test
     - name: Upload artifact
       if: ${{ inputs.artifact_path != '' && inputs.artifact_name != '' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.artifact_path }}

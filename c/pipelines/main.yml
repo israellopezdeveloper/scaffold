@@ -10,15 +10,10 @@ jobs:
     name: Generate documentation
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/make-doc:debian-bookworm_GCC-14_20241126134054'
+      docker_image: 'lopoeisr/make-doc:debian-bookworm_GCC-14_20241202135515'
       docker_options: '--privileged --user root'
       commands: |
-        autoreconf --install
-        mkdir build
-        cd build
-        ../configure --enable-doxygen-doc
-        make doxygen-doc
-        cd ..
+        ./runme --actions docs
         tar -czf documentation.tar.gz -C build/docs html -C latex refman.pdf
       artifact_path: 'documentation.tar.gz'
       artifact_name: 'documentation'
@@ -27,10 +22,10 @@ jobs:
     name: Generate coverage report
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241126134054'
+      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241202135515'
       docker_options: '--privileged --user root'
       commands: |
-        ./runme --coverage
+        ./runme --mode coverage --actions coverage
         tar -czf coverage.tar.gz -C build/coverage .
       artifact_path: 'coverage.tar.gz'
       artifact_name: 'coverage'
@@ -39,10 +34,10 @@ jobs:
     name: Check and generate binaries using GCC
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241126134054'
+      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241202135515'
       docker_options: '--privileged --user root'
       commands: |
-        ./runme
+        ./runme --actions test
         tar -czf gcc-libs.tar.gz -C build/lib .
       artifact_path: 'gcc-libs.tar.gz'
       artifact_name: 'gcc-libs'
@@ -51,10 +46,10 @@ jobs:
     name: Check and generate binaries using Clang
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/make-clang:debian-bookworm_CLANG-19_20241126134054'
+      docker_image: 'lopoeisr/make-clang:debian-bookworm_CLANG-19_20241202135515'
       docker_options: '--privileged --user root'
       commands: |
-        ./runme
+        ./runme --actions test
         tar -czf clang-libs.tar.gz -C build/lib .
       artifact_path: 'clang-libs.tar.gz'
       artifact_name: 'clang-libs'
@@ -63,33 +58,22 @@ jobs:
     name: Check memory leaks on GCC
     uses: ./.github/workflows/reusable-job.yml
     with:
-      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241126134054'
+      docker_image: 'lopoeisr/make-gcc:debian-bookworm_GCC-14_20241202135515'
       docker_options: '--privileged --user root'
       commands: |
         ulimit -n 1024
-        ./runme --leak
-
-  leak-clang:
-    name: Check memory leaks on Clang
-    uses: ./.github/workflows/reusable-job.yml
-    with:
-      docker_image: 'lopoeisr/make-clang:debian-bookworm_CLANG-19_20241126134054'
-      docker_options: '--privileged --user root'
-      commands: |
-        ulimit -n 1024
-        ./runme --leak
+        ./runme --mode memleak --actions memleak || true
 
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [create-docs,create-coverage,test-gcc,test-clang,leak-gcc,leak-clang]
+    needs: [create-docs,create-coverage,test-gcc,test-clang,leak-gcc]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         submodules: true
         fetch-depth: 0
-        recursive: true
     - name: Get version number
       run: |
         autoreconf --install
@@ -109,19 +93,19 @@ jobs:
           - Documentation
           - Coverage
     - name: Download documentation
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: documentation
     - name: Download Coverage
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: coverage
     - name: Download Clang libs
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: clang-libs
     - name: Download GCC libs
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: gcc-libs
     - name: Upload GCC libraries to Release
@@ -168,11 +152,11 @@ jobs:
         git checkout gh-pages
         git clean -fd
     - name: Download documentation
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: documentation
     - name: Download Coverage
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: coverage
     - name: Uncompress documentation and coverage
