@@ -216,7 +216,7 @@ for f in "${MK_DIR}"/*; do
 done
 
 for f in "${PIPELINE_DIR}"/*; do
-  ln -s "$(realpath --relative-to="${DEST_DIR}/.github/workflows" "${f}")" "${DEST_DIR}/.github/workflows"
+  ln "$(realpath --relative-to="${DEST_DIR}/.github/workflows" "${f}")" "${DEST_DIR}/.github/workflows"
 done
 
 # Output information
