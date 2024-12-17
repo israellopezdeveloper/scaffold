@@ -2,7 +2,7 @@ if ENABLE_CODE_COVERAGE
 COVERAGE_OUTPUT = coverage
 
 # Rule to generate code coverage with GCC
-coverage-GCC: $(check_PROGRAMS) $(GTEST_LIBS)
+coverage-GCC: $(GTEST_LIBS) $(check_PROGRAMS)
 	@$(MAKE) clean
 	@$(MAKE) check
 	@$(GCOV) -o src $(srcdir)/src/*.c
@@ -27,7 +27,7 @@ coverage-GCC: $(check_PROGRAMS) $(GTEST_LIBS)
 	src > /dev/null
 
 # Rule to generate code coverage with Clang
-coverage-Clang: $(check_PROGRAMS) $(GTEST_LIBS)
+coverage-Clang: $(GTEST_LIBS) $(check_PROGRAMS)
 	@$(MAKE) clean
 	@$(MAKE) check > /dev/null 2>&1
 	@$(LLVM_PROFDATA) merge -sparse default.profraw -o default.profdata
