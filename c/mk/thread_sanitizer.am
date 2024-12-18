@@ -1,5 +1,5 @@
 if ENABLE_THREAD_SANITIZER
-thread-check: $(check_PROGRAMS)
+thread-check: $(check_PROGRAMS) $(GTEST_LIBS)
 	@echo -e -n "\nRunning thread sanitizer..."
 	@for f in $$(ls tests/.libs/*_leak); do \
     if [ -f "$$f" ] && [ -x "$$f" ]; then \
