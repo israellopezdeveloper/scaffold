@@ -1,6 +1,6 @@
 if ENABLE_MEMORY_LEAK
 
-leak-check: $(check_PROGRAMS)
+leak-check: $(check_PROGRAMS) $(GTEST_LIB)
 	@echo -n -e "\nRunning memory leak check ... "
 	@for f in $$(ls tests/.libs/*_leak); do \
     if [ -f "$$f" ] && [ -x "$$f" ]; then \
