@@ -1,14 +1,16 @@
 if ENABLE_MEMORY_LEAK
 
 leak-check: $(check_PROGRAMS)
-	@echo "Running memory leak check ..."
+	@echo -n -e "\nRunning memory leak check ... "
 	@for f in $$(ls tests/.libs/*_leak); do \
     if [ -f "$$f" ] && [ -x "$$f" ]; then \
-      $(MEMORY_LEAK_DIAGNOSTIC) "$$f" > output.log 2>&1; \
+      export LD_LIBRARY_PATH=lib/.libs/:$LD_LIBRARY_PATH; \
+      $(MEMORY_LEAK_DIAGNOSTIC) \
+        "$$f" 2> output.log > /dev/null; \
       if grep -q "no leaks are possible" output.log; then \
-        echo "No memory leaks detected at $$f"; \
+        echo "✅ No memory leaks detected at $$(basename "$$f")"; \
       else \
-        echo "Memory leaks detected at $$f"; \
+        echo "❌ Memory leaks detected at $$(basename "$$f")"; \
         exit 1; \
       fi; \
     fi; \
