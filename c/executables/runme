@@ -4,17 +4,20 @@
 #
 # Description:
 #   This script automates the configuration and execution of various actions
-#   for an Autotools-based project. It supports multiple build modes and actions,
-#   such as cleaning the build directory, generating documentation, running
-#   memory leak checks, thread sanitization, coverage checks, and packaging tasks.
+#   for an Autotools-based project. It supports multiple build modes and
+#   actions, such as cleaning the build directory, generating documentation,
+#   running memory leak checks, thread sanitization, coverage checks, and
+#   packaging tasks.
 #
 # Functionality:
 #   - Processes options using `getopt` to accept the following arguments:
-#     - `--mode` (-m): Specifies the build mode (production, debug, memleak, etc.).
+#     - `--mode` (-m): Specifies the build mode (production, debug, memleak,
+#     etc.).
 #     - `--actions` (-a): Comma-separated list of actions to execute.
 #     - `--loop` (-l): Runs actions in a loop until stopped by the user.
 #     - `--disable-timeout` (-t): Disables timeouts for make execution.
-#     - `--stoppable` (-s): Pauses after each action until the user presses Enter.
+#     - `--stoppable` (-s): Pauses after each action until the user presses
+#     Enter.
 #     - `--help` (-h): Displays usage information.
 #
 #   Actions include:
@@ -28,7 +31,7 @@
 #     - arch_package, deb_package, rpm_package: Package generation (TODO)
 #
 # Usage Example:
-#   ./script.sh --mode debug --actions "docs,memleak" --stoppable
+#   ./runme --mode memleak --actions "docs,memleak" --stoppable
 #
 # Author: Israel
 # Creation Date: December 15, 2024
@@ -112,7 +115,10 @@ main() {
       echo "${output}" | awk '{$1=$1;print}'
     }
 
-    OPTS=$(getopt --name "${0}" --options "m:a:ltsh" --longoptions "mode:,actions:,loop,disable-timeout,stoppable,help" -- "$@")
+    OPTS=$(getopt --name "${0}" --options "m:a:ltsh" --longoptions "mode:,actions:,loop,disable-timeout,stoppable,help" -- "$@") || {
+      show_help
+      exit 1
+    }
     eval set -- "${OPTS}"
     while true; do
       case "$1" in
