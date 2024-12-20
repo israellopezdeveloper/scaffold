@@ -15,7 +15,7 @@
 #     etc.).
 #     - `--actions` (-a): Comma-separated list of actions to execute.
 #     - `--loop` (-l): Runs actions in a loop until stopped by the user.
-#     - `--disable-timeout` (-t): Disables timeouts for make execution.
+#     - `--timeout` (-t): Set the timeout for make execution.
 #     - `--stoppable` (-s): Pauses after each action until the user presses
 #     Enter.
 #     - `--help` (-h): Displays usage information.
@@ -48,7 +48,7 @@ MODE=""
 VALID_ACTIONS="check compile_commands docs memleak coverage thread iwyu arch_package deb_package rpm_package clean"
 ACTIONS=""
 LOOP=false
-TIMEOUT=true
+TIMEOUT="120"
 STOPPABLE=false
 
 # Main function
@@ -98,7 +98,8 @@ main() {
       echo "               rpm_package      creates RPM Package (TODO)"
       echo "               clean            Clean build directory before building and do not clean after"
       echo "  -l, --loop                    Enable loop mode"
-      echo "  -t, --disable-timeout         Disable timeouts on rule execution"
+      echo "  -t, --timeout <TIME>          Set timeout on rule execution to TIME in seconds (default 120s)"
+      echo "                                <= 0 is disabled"
       echo "  -s, --stoppable               pause after every action"
       echo "  -h, --help                    Show this help message"
     }
@@ -115,7 +116,7 @@ main() {
       echo "${output}" | awk '{$1=$1;print}'
     }
 
-    OPTS=$(getopt --name "${0}" --options "m:a:ltsh" --longoptions "mode:,actions:,loop,disable-timeout,stoppable,help" -- "$@") || {
+    OPTS=$(getopt --name "${0}" --options "m:a:lt:sh" --longoptions "mode:,actions:,loop,timeout:,stoppable,help" -- "$@") || {
       show_help
       exit 1
     }
@@ -138,9 +139,9 @@ main() {
         LOOP=true
         shift
         ;;
-      -t | --disable-timeout)
-        TIMEOUT=false
-        shift
+      -t | --timeout)
+        TIMEOUT="${2}"
+        shift 2
         ;;
       -s | --stoppable)
         STOPPABLE=true
@@ -233,14 +234,14 @@ main() {
         banner "MAKE ${params}"
 
         make clean
-        if ${TIMEOUT}; then
+        if [ "${TIMEOUT}" -gt 0 ]; then
           max_attempts=3
           attempt=0
 
           while [ $attempt -lt $max_attempts ]; do
             attempt=$((attempt + 1))
 
-            timeout "120s" make "${params}"
+            timeout "${TIMEOUT}s" make "${params}"
             exit_status=$?
 
             if [ $exit_status -eq 0 ]; then

@@ -6,7 +6,7 @@ thread-check: $(GTEST_LIBS) $(check_PROGRAMS)
       export LD_LIBRARY_PATH=lib/.libs/:$LD_LIBRARY_PATH; \
         "$$f" 2> output.log > /dev/null; \
       if grep -q "WARNING:" output.log || grep -q "FATAL:" output.log; then \
-        echo "❌ Thread issues detected at $$(basename "$$f")"; \
+        echo "❌ Thread issues detected at $$(basename "$$f")"; cat output.log; \
         exit 1; \
       else \
         echo "✅ No thread issues detected at $$(basename "$$f")"; \
