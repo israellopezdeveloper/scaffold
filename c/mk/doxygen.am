@@ -2,13 +2,13 @@ if ENABLE_DOXYGEN_DOC
 
 DOXYGEN_OUTPUT = docs
 
-docs/html/index.html: Doxyfile
+docs/html/index.html: doc/Doxyfile
 	@mkdir -p docs
-	@$(DOXYGEN) Doxyfile > /dev/null 2>&1
+	@$(DOXYGEN) doc/Doxyfile > /dev/null 2>&1
 
-docs/latex/refman.pdf: Doxyfile
+docs/latex/refman.pdf: doc/Doxyfile
 	@mkdir -p docs/latex
-	@$(DOXYGEN) Doxyfile > /dev/null 2>&1
+	@$(DOXYGEN) doc/Doxyfile > /dev/null 2>&1
 	@cd docs/latex; $(MAKE) > /dev/null 2>&1; find . -type f -not \( -name "*.pdf" -o -name "*.sty" -o -name "Makefile" -o -name "*.tex" \) -delete > /dev/null 2>&1
 	@tar -czvf docs.tar.gz docs > /dev/null 2>&1
 

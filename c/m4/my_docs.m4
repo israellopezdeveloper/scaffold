@@ -33,7 +33,7 @@ AC_DEFUN([CONFIGURE_DOXYGEN], [
             fi
 
             dnl Process the Doxyfile.in to generate Doxyfile with the correct values
-            AC_CONFIG_FILES([Doxyfile])
+            AC_CONFIG_FILES([doc/Doxyfile])
 
             AM_CONDITIONAL([ENABLE_DOXYGEN_DOC], [true])
         fi

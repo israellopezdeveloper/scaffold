@@ -4,7 +4,7 @@ thread-check: $(GTEST_LIBS) $(check_PROGRAMS)
 	@for f in $$(ls tests/.libs/*_leak); do \
     if [ -f "$$f" ] && [ -x "$$f" ]; then \
       export LD_LIBRARY_PATH=lib/.libs/:$LD_LIBRARY_PATH; \
-        "$$f" 2> output.log > /dev/null; \
+        valgrind --tool=helgrind "$$f" 2> output.log >&2; \
       if grep -q "WARNING:" output.log || grep -q "FATAL:" output.log; then \
         echo "❌ Thread issues detected at $$(basename "$$f")"; cat output.log; \
         exit 1; \
