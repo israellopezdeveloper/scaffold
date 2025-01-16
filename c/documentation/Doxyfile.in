@@ -9,7 +9,7 @@ OUTPUT_DIRECTORY       = docs
 CREATE_SUBDIRS         = YES
 
 # Input settings
-INPUT                  =  @top_srcdir@/src @top_srcdir@/include @top_srcdir@/README.md
+INPUT                  =  @top_srcdir@/src @top_srcdir@/include @top_srcdir@/doc/README.md
 FILE_PATTERNS          = *.c *.cpp *.h *.hpp
 RECURSIVE              = YES
 
@@ -44,8 +44,9 @@ GENERATE_XML           = NO
 # HTML settings
 HTML_EXTRA_STYLESHEET  = @top_srcdir@/doc/doxygen-awesome.css @top_srcdir@/doc/doxygen-awesome-sidebar-only-darkmode-toggle.css
 HTML_EXTRA_FILES       = @top_srcdir@/doc/doxygen-awesome-darkmode-toggle.js @top_srcdir@/doc/doxygen-awesome-fragment-copy-button.js @top_srcdir@/doc/doxygen-awesome-interactive-toc.js @top_srcdir@/doc/doxygen-awesome-paragraph-link.js @top_srcdir@/doc/doxygen-awesome-tabs.js
-USE_MDFILE_AS_MAINPAGE = @top_srcdir@/README.md
+USE_MDFILE_AS_MAINPAGE = @top_srcdir@/doc/README.md
 HTML_HEADER            = @top_srcdir@/doc/header.html
+HTML_FOOTER            = @top_srcdir@/doc/footer.html
 HTML_COLORSTYLE        = DARK
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html

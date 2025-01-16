@@ -4,10 +4,14 @@ DOXYGEN_OUTPUT = docs
 
 docs/html/index.html: doc/Doxyfile
 	@mkdir -p docs
+	@echo "" > $(top_srcdir)/doc/README.md
+	@$(top_srcdir)/doc/doxygen_filter_mermaid.sh $(top_srcdir)/README.md $(top_srcdir)/doc/README.md
 	@$(DOXYGEN) doc/Doxyfile > /dev/null 2>&1
 
 docs/latex/refman.pdf: doc/Doxyfile
 	@mkdir -p docs/latex
+	@echo "" > $(top_srcdir)/doc/README.md
+	@$(top_srcdir)/doc/doxygen_filter_mermaid.sh $(top_srcdir)/README.md $(top_srcdir)/doc/README.md
 	@$(DOXYGEN) doc/Doxyfile > /dev/null 2>&1
 	@cd docs/latex; $(MAKE) > /dev/null 2>&1; find . -type f -not \( -name "*.pdf" -o -name "*.sty" -o -name "Makefile" -o -name "*.tex" \) -delete > /dev/null 2>&1
 	@tar -czvf docs.tar.gz docs > /dev/null 2>&1
