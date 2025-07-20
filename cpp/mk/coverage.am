@@ -1,0 +1,57 @@
+if ENABLE_CODE_COVERAGE
+COVERAGE_OUTPUT = coverage
+
+# Rule to generate code coverage with GCC
+coverage-GCC:
+	@$(MAKE) clean
+	@$(MAKE) check
+	@$(GCOV) -o src $(srcdir)/src/*.c
+	@mkdir -p coverage/{html,json}
+	@$(LCOV) --capture --directory src --output-file coverage/coverage.info
+	@$(LCOV) --extract coverage/coverage.info "*/src/*" --output-file coverage/filtered_coverage.info
+	@$(GENHTML) coverage/filtered_coverage.info --output-directory coverage/html
+	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
+   $(GCOVR) --json-summary \
+    --gcov-ignore-parse-errors \
+    --root $(srcdir)/src \
+    --filter "$${FILTER_PATTERN}" \
+    -o coverage/json/coverage.json src 2> /dev/null
+	@export FILTER_PATTERN=$$(ls ../include/*.h | sed 's&\.\.\/include\/&$(srcdir)\/src\/&g' | sed 's/\.h/.c/g' | tr '\n' '|' | sed 's/|$$//');\
+   $(GCOVR) --json-summary --root $(srcdir)/src \
+    --gcov-ignore-parse-errors \
+    --filter "$${FILTER_PATTERN}" \
+		--fail-under-line 70 \
+		--fail-under-branch 70 \
+	src > /dev/null
+
+# Rule to generate code coverage with Clang
+coverage-Clang:
+	@$(MAKE) clean
+	@$(MAKE) check > /dev/null 2>&1
+	@$(LLVM_PROFDATA) merge -sparse default.profraw -o default.profdata
+	@mkdir -p coverage/{html,json} 
+	@$(LLVM_COV) show \
+    $$(find tests -type f -name '*_test' -executable | head -n 1) \
+    $(srcdir)/src \
+    -instr-profile=default.profdata \
+    -format=html \
+    -output-dir=coverage/html
+	@$(LLVM_COV) export $$(find tests -type f -name '*_test' -executable | head -n 1) -instr-profile=default.profdata -format=text -summary-only | jq ".data[0].totals" | jq 'del(.regions, .instantiations, .mcdc)' > coverage/json/coverage.json
+	@export LINE_COVERAGE=$$(jq -r '.lines.percent' coverage/json/coverage.json); \
+  export LINE_COVERAGE_INT=$$(echo "$$LINE_COVERAGE" | awk '{ printf("%d\n", $$1 * 10) }'); \
+	if [ "$$LINE_COVERAGE_INT" -lt 800 ]; then \
+    echo "Error: La cobertura de líneas es inferior al 80%. Cobertura actual: $$LINE_COVERAGE%" >&2; exit 1; \
+  fi
+	@export BRANCH_COVERAGE=$$(jq -r '.branches.percent' coverage/json/coverage.json); \
+  export BRANCH_COVERAGE_INT=$$(echo "$$BRANCH_COVERAGE" | awk '{ printf("%d\n", $$1 * 10) }'); \
+	export BRANCH_TOTAL=$$(jq -r '.branches.count' coverage/json/coverage.json); \
+  export BRANCH_TOTAL_INT=$$(echo "$$BRANCH_TOTAL" | awk '{ printf("%d\n", $$1) }'); \
+	if [ "$$BRANCH_COVERAGE_INT" -lt 800 ] && [ "$$BRANCH_TOTAL_INT" -ne 0 ]; then \
+    echo "Error: La cobertura de ramas es inferior al 80%. Cobertura actual: $$BRANCH_COVERAGE%" >&2; exit 1; \
+  fi
+
+coverage: coverage-@COMPILER@
+
+.PHONY: coverage
+endif
+
