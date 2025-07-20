@@ -1,0 +1,11 @@
+if ENABLE_COMPILE_COMMANDS
+compile_commands:
+	@echo "Generating compile_commands.json using bear..."
+	@bear -- make all check && cp compile_commands.json $(srcdir)
+
+CLEANFILES += compile_commands.json
+else
+compile_commands:
+	@echo "Skipping generation of compile_commands.json"
+endif
+
