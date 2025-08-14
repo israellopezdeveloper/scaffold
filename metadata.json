@@ -1,8 +1,5 @@
 {
-  "technologies": [
-    "make",
-    "bash"
-  ],
+  "technologies": ["Make", "Bash"],
   "lang": {
     "en": {
       "name": "Scaffold",
